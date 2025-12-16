@@ -1,0 +1,253 @@
+openapi: 3.0.3
+info:
+  title: Country Data API
+  version: 1.0.0
+  description: |
+    A REST API that provides information about countries including their names, capitals, 
+    populations, regions, and languages. This API serves as a learning example demonstrating 
+    spec-driven development with proper data validation, error handling, and testing.
+  contact:
+    name: API Support
+    email: support@countrydataapi.example.com
+
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+tags:
+  - name: countries
+    description: Operations related to country data
+
+paths:
+  /api/countries:
+    get:
+      tags:
+        - countries
+      summary: Get all countries or filter by region/search
+      description: |
+        Retrieve a list of all countries, or filter the results using query parameters.
+        Supports filtering by region and searching by partial name match.
+      operationId: getCountries
+      parameters:
+        - name: region
+          in: query
+          description: Filter countries by region (case-insensitive)
+          required: false
+          schema:
+            type: string
+          example: Europe
+        - name: search
+          in: query
+          description: Search countries by partial name match (case-insensitive)
+          required: false
+          schema:
+            type: string
+          example: land
+      responses:
+        '200':
+          description: Successful response with array of countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+              examples:
+                allCountries:
+                  summary: All countries
+                  value:
+                    - name: France
+                      capital: Paris
+                      population: 67390000
+                      region: Europe
+                      languages:
+                        - French
+                    - name: Japan
+                      capital: Tokyo
+                      population: 125800000
+                      region: Asia
+                      languages:
+                        - Japanese
+                filteredByRegion:
+                  summary: Filtered by region (Europe)
+                  value:
+                    - name: France
+                      capital: Paris
+                      population: 67390000
+                      region: Europe
+                      languages:
+                        - French
+                    - name: Germany
+                      capital: Berlin
+                      population: 83240000
+                      region: Europe
+                      languages:
+                        - German
+                searchResults:
+                  summary: Search results for "land"
+                  value:
+                    - name: Finland
+                      capital: Helsinki
+                      population: 5540000
+                      region: Europe
+                      languages:
+                        - Finnish
+                        - Swedish
+                    - name: Thailand
+                      capital: Bangkok
+                      population: 69800000
+                      region: Asia
+                      languages:
+                        - Thai
+                emptyResults:
+                  summary: No matching countries
+                  value: []
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Method not allowed
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Internal server error
+
+  /api/countries/{name}:
+    get:
+      tags:
+        - countries
+      summary: Get a specific country by name
+      description: |
+        Retrieve detailed information about a specific country by its name.
+        The name matching is case-insensitive.
+      operationId: getCountryByName
+      parameters:
+        - name: name
+          in: path
+          description: The name of the country to retrieve (case-insensitive)
+          required: true
+          schema:
+            type: string
+          example: France
+      responses:
+        '200':
+          description: Successful response with country details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+              examples:
+                france:
+                  summary: France
+                  value:
+                    name: France
+                    capital: Paris
+                    population: 67390000
+                    region: Europe
+                    languages:
+                      - French
+                japan:
+                  summary: Japan
+                  value:
+                    name: Japan
+                    capital: Tokyo
+                    population: 125800000
+                    region: Asia
+                    languages:
+                      - Japanese
+        '404':
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: 'Country "Atlantis" not found'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Method not allowed
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Internal server error
+
+components:
+  schemas:
+    Country:
+      type: object
+      description: Represents a country with its attributes
+      required:
+        - name
+        - capital
+        - population
+        - region
+        - languages
+      properties:
+        name:
+          type: string
+          description: The name of the country (non-empty)
+          minLength: 1
+          example: France
+        capital:
+          type: string
+          description: The capital city of the country
+          example: Paris
+        population:
+          type: integer
+          description: The population of the country (non-negative)
+          minimum: 0
+          example: 67390000
+        region:
+          type: string
+          description: The geographic region where the country is located
+          enum:
+            - Europe
+            - Asia
+            - Americas
+            - Africa
+            - Oceania
+          example: Europe
+        languages:
+          type: array
+          description: List of languages spoken in the country
+          minItems: 1
+          items:
+            type: string
+          example:
+            - French
+      example:
+        name: France
+        capital: Paris
+        population: 67390000
+        region: Europe
+        languages:
+          - French
+
+    Error:
+      type: object
+      description: Error response structure
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: A descriptive error message explaining what went wrong
+          example: Country "Atlantis" not found
+      example:
+        error: Country "Atlantis" not found

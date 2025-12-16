@@ -1,0 +1,11 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 95d4605f2450acca7e9d695dc40fd7a8a415315ab3f44fe123733a3736588667 # shrinks to countries = [Country { name: " ", capital: "A", population: 0, region: "A", languages: ["A"] }]
+cc ee1b8591957ef95aeb2c920d720915e388cac10294cf2a39924ca90a13a4c877 # shrinks to countries = [Country { name: " ", capital: "a", population: 0, region: "a", languages: ["A"] }]
+cc d4a4e382482d6d7d1b38b771875201ba42d752f18c802f01942fb415cf06dfd0 # shrinks to countries = [Country { name: " ", capital: "a", population: 0, region: "a", languages: ["A"] }]
+cc d2b6f31f65fe29aeb1b05151e825a672ef46c0709d50d9275326512f8f659dda # shrinks to countries = [Country { name: "   ", capital: "A", population: 0, region: "a", languages: ["a"] }, Country { name: "a", capital: "a", population: 0, region: "A", languages: ["a"] }]
+cc 83783b1db569578da26fa2b81f8034f36366443d3dce1e38979af9a806f14a1e # shrinks to countries = [Country { name: "Z", capital: "A", population: 0, region: "A", languages: ["a"] }, Country { name: "Z", capital: "a", population: 0, region: "A", languages: ["a"] }]

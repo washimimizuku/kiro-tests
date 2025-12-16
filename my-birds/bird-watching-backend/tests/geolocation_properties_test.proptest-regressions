@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 07444cf543f6618d0e875d6f738b05c147962e120e534ade3df9e6851e61211c # shrinks to username = "a0a_521998ef", email = "aa0_8969d7dc@aa.aa", password = "0##^aa#0", species = "Aaaa aaa", location = "Aaaa, AA", latitude = 0.0, longitude = 0.0

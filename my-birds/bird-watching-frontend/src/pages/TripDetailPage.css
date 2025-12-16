@@ -1,0 +1,278 @@
+.trip-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.trip-detail-page .page-header {
+  margin-bottom: 2rem;
+}
+
+.trip-detail-page .back-btn {
+  background-color: #f5f5f5;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.trip-detail-page .back-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.trip-detail-page .loading {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.trip-detail-page .error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.trip-info-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.trip-info-card h1 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+}
+
+.trip-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.trip-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #666;
+  font-size: 1rem;
+}
+
+.detail-icon {
+  font-size: 1.2rem;
+}
+
+.trip-description {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.trip-description h3 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.trip-description p {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.trip-map-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.trip-map-section h2 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.no-coordinates-message {
+  background-color: #f5f5f5;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.no-coordinates-message p {
+  color: #666;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.observations-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.observations-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.observations-section h2 {
+  margin: 0;
+  color: #333;
+}
+
+.observations-section .add-observation-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.observations-section .add-observation-btn:hover {
+  background-color: #45a049;
+}
+
+.add-observations-panel {
+  background-color: #f5f5f5;
+  padding: 1.5rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+}
+
+.add-observations-panel h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.add-observations-panel .no-observations {
+  color: #666;
+  margin: 0;
+}
+
+.observations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.observation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  gap: 1rem;
+}
+
+.observation-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.observation-info strong {
+  color: #333;
+}
+
+.observation-location {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.observation-item .add-btn {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.observation-item .add-btn:hover {
+  background-color: #1976D2;
+}
+
+.observations-section .empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.observations-section .empty-state p {
+  margin: 0.5rem 0;
+}
+
+.observations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.observation-wrapper {
+  position: relative;
+}
+
+.remove-from-trip-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.remove-from-trip-btn:hover {
+  background-color: #f57c00;
+}
+
+@media (max-width: 768px) {
+  .trip-detail-page {
+    padding: 1rem;
+  }
+
+  .trip-info-card,
+  .observations-section {
+    padding: 1.5rem;
+  }
+
+  .trip-details {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .observations-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .observations-grid {
+    grid-template-columns: 1fr;
+  }
+}
