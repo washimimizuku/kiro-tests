@@ -35,21 +35,24 @@ def get_countries():
     Returns:
         JSON array of country objects with 200 status code
     """
-    # Check for region filter
-    region = request.args.get('region')
-    if region:
-        countries = data_store.filter_by_region(region)
+    try:
+        # Check for region filter
+        region = request.args.get('region')
+        if region:
+            countries = data_store.filter_by_region(region)
+            return jsonify([country.to_dict() for country in countries]), 200
+        
+        # Check for search query
+        search_query = request.args.get('search')
+        if search_query is not None:  # Allow empty string
+            countries = data_store.search_by_name(search_query)
+            return jsonify([country.to_dict() for country in countries]), 200
+        
+        # Return all countries
+        countries = data_store.get_all()
         return jsonify([country.to_dict() for country in countries]), 200
-    
-    # Check for search query
-    search_query = request.args.get('search')
-    if search_query is not None:  # Allow empty string
-        countries = data_store.search_by_name(search_query)
-        return jsonify([country.to_dict() for country in countries]), 200
-    
-    # Return all countries
-    countries = data_store.get_all()
-    return jsonify([country.to_dict() for country in countries]), 200
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @api_bp.route('/countries/<name>', methods=['GET'])
@@ -63,9 +66,12 @@ def get_country_by_name(name: str):
         JSON object of the country with 200 status code, or
         JSON error object with 404 status code if not found
     """
-    country = data_store.get_by_name(name)
-    
-    if country is None:
-        return jsonify({'error': f'Country "{name}" not found'}), 404
-    
-    return jsonify(country.to_dict()), 200
+    try:
+        country = data_store.get_by_name(name)
+        
+        if country is None:
+            return jsonify({'error': f'Country "{name}" not found'}), 404
+        
+        return jsonify(country.to_dict()), 200
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500

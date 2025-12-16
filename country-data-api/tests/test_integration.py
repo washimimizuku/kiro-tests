@@ -45,18 +45,21 @@ class TestApplicationStartup:
     
     def test_all_sample_countries_are_accessible(self, client):
         """Test that all sample countries can be retrieved individually."""
-        sample_countries = get_sample_countries()
-        
-        for country in sample_countries:
-            response = client.get(f'/api/countries/{country.name}')
-            assert response.status_code == 200
+        try:
+            sample_countries = get_sample_countries()
             
-            data = response.get_json()
-            assert data['name'] == country.name
-            assert data['capital'] == country.capital
-            assert data['population'] == country.population
-            assert data['region'] == country.region
-            assert data['languages'] == country.languages
+            for country in sample_countries:
+                response = client.get(f'/api/countries/{country.name}')
+                assert response.status_code == 200
+                
+                data = response.get_json()
+                assert data['name'] == country.name
+                assert data['capital'] == country.capital
+                assert data['population'] == country.population
+                assert data['region'] == country.region
+                assert data['languages'] == country.languages
+        except Exception as e:
+            pytest.fail(f"Failed to access sample countries: {e}")
 
 
 class TestEndpointsWorkTogether:
@@ -64,81 +67,99 @@ class TestEndpointsWorkTogether:
     
     def test_list_filter_and_retrieve_workflow(self, client):
         """Test a complete workflow: list all, filter by region, retrieve specific country."""
-        # Step 1: List all countries
-        response = client.get('/api/countries')
-        assert response.status_code == 200
-        all_countries = response.get_json()
-        assert len(all_countries) > 0
-        
-        # Step 2: Filter by a specific region
-        response = client.get('/api/countries?region=Europe')
-        assert response.status_code == 200
-        european_countries = response.get_json()
-        assert len(european_countries) > 0
-        assert len(european_countries) < len(all_countries)
-        
-        # Verify all returned countries are from Europe
-        for country in european_countries:
-            assert country['region'] == 'Europe'
-        
-        # Step 3: Retrieve a specific European country
-        first_european = european_countries[0]
-        response = client.get(f'/api/countries/{first_european["name"]}')
-        assert response.status_code == 200
-        
-        retrieved_country = response.get_json()
-        assert retrieved_country['name'] == first_european['name']
-        assert retrieved_country['region'] == 'Europe'
+        try:
+            # Step 1: List all countries
+            response = client.get('/api/countries')
+            assert response.status_code == 200
+            all_countries = response.get_json()
+            assert len(all_countries) > 0
+            
+            # Step 2: Filter by a specific region
+            response = client.get('/api/countries?region=Europe')
+            assert response.status_code == 200
+            european_countries = response.get_json()
+            assert len(european_countries) > 0
+            assert len(european_countries) < len(all_countries)
+            
+            # Verify all returned countries are from Europe
+            for country in european_countries:
+                assert country['region'] == 'Europe'
+            
+            # Step 3: Retrieve a specific European country
+            first_european = european_countries[0]
+            response = client.get(f'/api/countries/{first_european["name"]}')
+            assert response.status_code == 200
+            
+            retrieved_country = response.get_json()
+            assert retrieved_country['name'] == first_european['name']
+            assert retrieved_country['region'] == 'Europe'
+        except Exception as e:
+            pytest.fail(f"List, filter, and retrieve workflow failed: {e}")
     
     def test_search_and_retrieve_workflow(self, client):
         """Test searching for countries and then retrieving them individually."""
-        # Step 1: Search for countries containing "United"
-        response = client.get('/api/countries?search=United')
-        assert response.status_code == 200
-        search_results = response.get_json()
-        assert len(search_results) > 0
-        
-        # Verify all results contain "United" in the name
-        for country in search_results:
-            assert 'united' in country['name'].lower()
-        
-        # Step 2: Retrieve each found country individually
-        for country in search_results:
-            response = client.get(f'/api/countries/{country["name"]}')
+        try:
+            # Step 1: Search for countries containing "United"
+            response = client.get('/api/countries?search=United')
             assert response.status_code == 200
+            search_results = response.get_json()
+            assert len(search_results) > 0
             
-            retrieved = response.get_json()
-            assert retrieved['name'] == country['name']
-            assert retrieved['capital'] == country['capital']
+            # Verify all results contain "United" in the name
+            for country in search_results:
+                assert 'united' in country['name'].lower()
+            
+            # Step 2: Retrieve each found country individually
+            for country in search_results:
+                response = client.get(f'/api/countries/{country["name"]}')
+                assert response.status_code == 200
+                
+                retrieved = response.get_json()
+                assert retrieved['name'] == country['name']
+                assert retrieved['capital'] == country['capital']
+        except Exception as e:
+            pytest.fail(f"Search and retrieve workflow failed: {e}")
     
     def test_multiple_regions_can_be_queried(self, client):
         """Test that different regions can be queried and return different results."""
-        regions = ['Europe', 'Asia', 'Americas', 'Africa', 'Oceania']
-        region_results = {}
-        
-        for region in regions:
-            response = client.get(f'/api/countries?region={region}')
-            assert response.status_code == 200
+        try:
+            regions = ['Europe', 'Asia', 'Americas', 'Africa', 'Oceania']
+            region_results = {}
             
-            countries = response.get_json()
-            region_results[region] = countries
+            for region in regions:
+                response = client.get(f'/api/countries?region={region}')
+                assert response.status_code == 200
+                
+                countries = response.get_json()
+                region_results[region] = countries
+                
+                # Verify all countries in this region match
+                for country in countries:
+                    assert country['region'] == region
             
-            # Verify all countries in this region match
-            for country in countries:
-                assert country['region'] == region
-        
-        # Verify we got different results for different regions
-        assert len(region_results['Europe']) > 0
-        assert len(region_results['Asia']) > 0
-        
-        # Verify no overlap between regions
-        europe_names = {c['name'] for c in region_results['Europe']}
-        asia_names = {c['name'] for c in region_results['Asia']}
-        assert len(europe_names.intersection(asia_names)) == 0
+            # Verify we got different results for different regions
+            assert len(region_results['Europe']) > 0
+            assert len(region_results['Asia']) > 0
+            
+            # Verify no overlap between regions
+            europe_names = {c['name'] for c in region_results['Europe']}
+            asia_names = {c['name'] for c in region_results['Asia']}
+            assert len(europe_names.intersection(asia_names)) == 0
+        except Exception as e:
+            pytest.fail(f"Multiple regions query failed: {e}")
 
 
 class TestErrorHandlingInCompleteFlow:
     """Test error handling in complete request flows."""
+    
+    def _assert_error_response(self, response, expected_status):
+        """Helper to assert error response structure."""
+        assert response.status_code == expected_status
+        assert response.content_type == 'application/json'
+        error_data = response.get_json()
+        assert 'error' in error_data
+        assert isinstance(error_data['error'], str)
+        return error_data
     
     def test_404_error_flow_for_nonexistent_country(self, client):
         """Test complete error flow when requesting a non-existent country."""
@@ -151,48 +172,27 @@ class TestErrorHandlingInCompleteFlow:
         
         # Now try to retrieve it and verify proper error handling
         response = client.get('/api/countries/Atlantis')
-        assert response.status_code == 404
-        assert response.content_type == 'application/json'
-        
-        error_data = response.get_json()
-        assert 'error' in error_data
+        error_data = self._assert_error_response(response, 404)
         assert 'Atlantis' in error_data['error']
     
     def test_404_error_flow_for_invalid_endpoint(self, client):
         """Test error handling for completely invalid endpoints."""
         response = client.get('/api/invalid_endpoint')
-        assert response.status_code == 404
-        assert response.content_type == 'application/json'
-        
-        error_data = response.get_json()
-        assert 'error' in error_data
-        assert isinstance(error_data['error'], str)
+        self._assert_error_response(response, 404)
     
     def test_405_error_flow_for_unsupported_methods(self, client):
         """Test error handling for unsupported HTTP methods."""
         # Test POST on countries list endpoint
         response = client.post('/api/countries')
-        assert response.status_code == 405
-        assert response.content_type == 'application/json'
-        
-        error_data = response.get_json()
-        assert 'error' in error_data
+        self._assert_error_response(response, 405)
         
         # Test PUT on specific country endpoint
         response = client.put('/api/countries/France')
-        assert response.status_code == 405
-        assert response.content_type == 'application/json'
-        
-        error_data = response.get_json()
-        assert 'error' in error_data
+        self._assert_error_response(response, 405)
         
         # Test DELETE on countries list endpoint
         response = client.delete('/api/countries')
-        assert response.status_code == 405
-        assert response.content_type == 'application/json'
-        
-        error_data = response.get_json()
-        assert 'error' in error_data
+        self._assert_error_response(response, 405)
     
     def test_error_responses_are_consistent_across_endpoints(self, client):
         """Test that error responses have consistent structure across all endpoints."""

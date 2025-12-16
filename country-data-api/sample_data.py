@@ -7,12 +7,21 @@ Data includes all UN member states and some territories.
 from models.country import Country
 
 
+_sample_countries = None
+
 def get_sample_countries():
     """
     Returns a list of all countries in the world with realistic data.
     Covers all regions: Africa, Americas, Asia, Europe, and Oceania.
     Population data is approximate as of 2023-2024.
     """
+    global _sample_countries
+    if _sample_countries is None:
+        _sample_countries = _create_countries()
+    return _sample_countries
+
+def _create_countries():
+    """Create the list of countries (called only once)."""
     return [
         # AFRICA
         Country(name="Algeria", capital="Algiers", population=44700000, region="Africa", languages=["Arabic", "Berber"]),

@@ -35,6 +35,7 @@ paths:
           required: false
           schema:
             type: string
+            maxLength: 100
           example: Europe
         - name: search
           in: query
@@ -42,6 +43,7 @@ paths:
           required: false
           schema:
             type: string
+            maxLength: 100
           example: land
       responses:
         '200':
@@ -102,6 +104,14 @@ paths:
                 emptyResults:
                   summary: No matching countries
                   value: []
+        '400':
+          description: Bad request - invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid query parameter value
         '405':
           description: Method not allowed
           content:
@@ -135,6 +145,8 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
+            maxLength: 100
           example: France
       responses:
         '200':
@@ -162,6 +174,14 @@ paths:
                     region: Asia
                     languages:
                       - Japanese
+        '400':
+          description: Bad request - invalid country name parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid country name parameter
         '404':
           description: Country not found
           content:
@@ -203,16 +223,33 @@ components:
           type: string
           description: The name of the country (non-empty)
           minLength: 1
+          maxLength: 100
+          pattern: "^[a-zA-Z\s\-'.,()]+$"
           example: France
+          errorMessage:
+            minLength: "Country name cannot be empty"
+            maxLength: "Country name cannot exceed 100 characters"
+            pattern: "Country name contains invalid characters"
         capital:
           type: string
           description: The capital city of the country
+          minLength: 1
+          maxLength: 100
+          pattern: "^[a-zA-Z\s\-'.,()]+$"
           example: Paris
+          errorMessage:
+            minLength: "Capital name cannot be empty"
+            maxLength: "Capital name cannot exceed 100 characters"
+            pattern: "Capital name contains invalid characters"
         population:
           type: integer
           description: The population of the country (non-negative)
           minimum: 0
+          maximum: 10000000000
           example: 67390000
+          errorMessage:
+            minimum: "Population must be non-negative"
+            maximum: "Population cannot exceed 10 billion"
         region:
           type: string
           description: The geographic region where the country is located
@@ -223,14 +260,20 @@ components:
             - Africa
             - Oceania
           example: Europe
+          errorMessage:
+            enum: "Region must be one of: Europe, Asia, Americas, Africa, Oceania"
         languages:
           type: array
           description: List of languages spoken in the country
           minItems: 1
           items:
             type: string
+            minLength: 1
+            maxLength: 50
           example:
             - French
+          errorMessage:
+            minItems: "At least one language must be specified"
       example:
         name: France
         capital: Paris

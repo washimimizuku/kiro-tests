@@ -26,10 +26,14 @@ class CountryDataStore:
         """
         self.countries = []
         for country in countries:
-            if country.validate():
-                self.countries.append(country)
-            else:
-                logger.error(f"Invalid country data rejected: {country.name if hasattr(country, 'name') else 'Unknown'}")
+            try:
+                if country.validate():
+                    self.countries.append(country)
+                else:
+                    logger.error(f"Invalid country data rejected: {country.name if hasattr(country, 'name') else 'Unknown'}")
+            except Exception as e:
+                logger.error(f"Error validating country: {type(e).__name__}")
+                continue
     
     def get_all(self) -> List[Country]:
         """Retrieve all countries from the store.
@@ -48,11 +52,15 @@ class CountryDataStore:
         Returns:
             The matching Country instance, or None if not found
         """
-        name_folded = name.casefold()
-        for country in self.countries:
-            if country.name.casefold() == name_folded:
-                return country
-        return None
+        try:
+            name_folded = name.casefold()
+            for country in self.countries:
+                if country.name.casefold() == name_folded:
+                    return country
+            return None
+        except (AttributeError, TypeError) as e:
+            logger.error(f"Error in get_by_name: {type(e).__name__}")
+            return None
     
     def filter_by_region(self, region: str) -> List[Country]:
         """Filter countries by region with case-insensitive matching.
@@ -63,11 +71,15 @@ class CountryDataStore:
         Returns:
             List of Country instances matching the specified region
         """
-        region_folded = region.casefold()
-        return [
-            country for country in self.countries
-            if country.region.casefold() == region_folded
-        ]
+        try:
+            region_folded = region.casefold()
+            return [
+                country for country in self.countries
+                if country.region.casefold() == region_folded
+            ]
+        except (AttributeError, TypeError) as e:
+            logger.error(f"Error in filter_by_region: {type(e).__name__}")
+            return []
     
     def search_by_name(self, query: str) -> List[Country]:
         """Search countries by partial name match with case-insensitive substring matching.
@@ -78,12 +90,16 @@ class CountryDataStore:
         Returns:
             List of Country instances whose names contain the query string
         """
-        # Empty or whitespace-only query returns all countries
-        if not query or not query.strip():
-            return self.countries.copy()
-        
-        query_folded = query.casefold()
-        return [
-            country for country in self.countries
-            if query_folded in country.name.casefold()
-        ]
+        try:
+            # Empty or whitespace-only query returns all countries
+            if not query or not query.strip():
+                return self.countries.copy()
+            
+            query_folded = query.casefold()
+            return [
+                country for country in self.countries
+                if query_folded in country.name.casefold()
+            ]
+        except (AttributeError, TypeError) as e:
+            logger.error(f"Error in search_by_name: {type(e).__name__}")
+            return []

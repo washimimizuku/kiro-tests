@@ -34,14 +34,23 @@ class Country:
             
         Returns:
             Country instance
+            
+        Raises:
+            KeyError: If required keys are missing
+            ValueError: If data types are invalid
         """
-        return cls(
-            name=data['name'],
-            capital=data['capital'],
-            population=data['population'],
-            region=data['region'],
-            languages=data['languages']
-        )
+        try:
+            return cls(
+                name=data['name'],
+                capital=data['capital'],
+                population=data['population'],
+                region=data['region'],
+                languages=data['languages']
+            )
+        except KeyError as e:
+            raise KeyError(f"Missing required field: {e}")
+        except (TypeError, ValueError) as e:
+            raise ValueError(f"Invalid data type: {e}")
     
     def validate(self) -> bool:
         """Validate country data integrity.
@@ -49,20 +58,21 @@ class Country:
         Returns:
             True if data is valid, False otherwise
         """
-        # Check name is non-empty
-        if not self.name or not isinstance(self.name, str) or not self.name.strip():
-            return False
-        
-        # Check population is non-negative integer
-        if not isinstance(self.population, int) or self.population < 0:
-            return False
-        
-        # Check languages is a list of strings
-        if not isinstance(self.languages, list):
-            return False
-        
-        for lang in self.languages:
-            if not isinstance(lang, str):
-                return False
-        
-        return True
+        return (self._is_valid_name() and 
+                self._is_valid_population() and 
+                self._is_valid_languages())
+    
+    def _is_valid_name(self) -> bool:
+        """Check if name is valid."""
+        return (isinstance(self.name, str) and 
+                self.name and 
+                self.name.strip())
+    
+    def _is_valid_population(self) -> bool:
+        """Check if population is valid."""
+        return isinstance(self.population, int) and self.population >= 0
+    
+    def _is_valid_languages(self) -> bool:
+        """Check if languages list is valid."""
+        return (isinstance(self.languages, list) and 
+                all(isinstance(lang, str) for lang in self.languages))

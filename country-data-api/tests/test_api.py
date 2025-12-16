@@ -17,36 +17,35 @@ def client():
         yield client
 
 
+def _assert_valid_response(response, expected_status=200):
+    """Helper to assert valid JSON response."""
+    assert response.status_code == expected_status
+    assert response.content_type == 'application/json'
+    return response.get_json()
+
+def _assert_country_structure(country):
+    """Helper to assert country has required fields."""
+    required_fields = ['name', 'capital', 'population', 'region', 'languages']
+    for field in required_fields:
+        assert field in country
+
 def test_get_all_countries_returns_200_and_all_countries(client):
     """Test GET /api/countries returns 200 and all countries."""
     response = client.get('/api/countries')
+    data = _assert_valid_response(response)
     
-    assert response.status_code == 200
-    assert response.content_type == 'application/json'
-    
-    data = response.get_json()
     assert isinstance(data, list)
-    # Sample data has 17 countries
     assert len(data) >= 15
     
-    # Verify structure of first country
     if len(data) > 0:
-        country = data[0]
-        assert 'name' in country
-        assert 'capital' in country
-        assert 'population' in country
-        assert 'region' in country
-        assert 'languages' in country
+        _assert_country_structure(data[0])
 
 
 def test_get_country_by_name_returns_200_for_existing_country(client):
     """Test GET /api/countries/<name> returns 200 for existing country."""
     response = client.get('/api/countries/France')
+    data = _assert_valid_response(response)
     
-    assert response.status_code == 200
-    assert response.content_type == 'application/json'
-    
-    data = response.get_json()
     assert data['name'] == 'France'
     assert data['capital'] == 'Paris'
     assert data['region'] == 'Europe'
@@ -65,12 +64,9 @@ def test_get_country_by_name_case_insensitive(client):
 def test_get_country_by_name_returns_404_for_nonexistent_country(client):
     """Test GET /api/countries/<name> returns 404 for non-existent country."""
     response = client.get('/api/countries/Atlantis')
+    data = _assert_valid_response(response, 404)
     
-    assert response.status_code == 404
-    assert response.content_type == 'application/json'
-    
-    data = response.get_json()
-    assert 'error' in data
+    _assert_error_response(data)
     assert 'Atlantis' in data['error']
 
 
@@ -186,46 +182,36 @@ def test_name_search_whitespace_query_returns_all_countries(client):
 def test_invalid_endpoint_returns_404_with_error_json(client):
     """Test invalid endpoint returns 404 with error JSON."""
     response = client.get('/api/invalid_endpoint')
+    data = _assert_valid_response(response, 404)
     
-    assert response.status_code == 404
-    assert response.content_type == 'application/json'
-    
-    data = response.get_json()
-    assert 'error' in data
-    assert isinstance(data['error'], str)
+    _assert_error_response(data)
 
 
 def test_unsupported_http_method_returns_405(client):
     """Test unsupported HTTP method returns 405."""
     # POST is not supported on /api/countries
     response = client.post('/api/countries')
+    data = _assert_valid_response(response, 405)
     
-    assert response.status_code == 405
-    assert response.content_type == 'application/json'
-    
-    data = response.get_json()
-    assert 'error' in data
+    _assert_error_response(data)
 
+
+def _assert_error_response(response_data):
+    """Helper to assert error response structure."""
+    assert 'error' in response_data
+    assert isinstance(response_data['error'], str)
+    assert len(response_data['error']) > 0
 
 def test_error_responses_contain_error_field(client):
     """Test error responses contain 'error' field."""
     # Test 404 error
     response_404 = client.get('/api/countries/NonExistentCountry')
-    data_404 = response_404.get_json()
-    assert 'error' in data_404
-    assert isinstance(data_404['error'], str)
-    assert len(data_404['error']) > 0
+    _assert_error_response(response_404.get_json())
     
     # Test 405 error
     response_405 = client.post('/api/countries')
-    data_405 = response_405.get_json()
-    assert 'error' in data_405
-    assert isinstance(data_405['error'], str)
-    assert len(data_405['error']) > 0
+    _assert_error_response(response_405.get_json())
     
     # Test 404 for invalid endpoint
     response_invalid = client.get('/api/invalid')
-    data_invalid = response_invalid.get_json()
-    assert 'error' in data_invalid
-    assert isinstance(data_invalid['error'], str)
-    assert len(data_invalid['error']) > 0
+    _assert_error_response(response_invalid.get_json())
