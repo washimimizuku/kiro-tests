@@ -607,17 +607,96 @@ impl Parser {
         // Return the value of the last statement
         result
     }
+
+    /// Get a copy of the current variables (for CLI persistence)
+    pub fn get_variables(&self) -> HashMap<String, f64> {
+        self.variables.clone()
+    }
+
+    /// Set variables from external source (for CLI persistence)
+    pub fn set_variables(&mut self, variables: HashMap<String, f64>) {
+        self.variables = variables;
+    }
 }
 
 // ============================================================================
-// MAIN FUNCTION - DEMONSTRATION
+// CLI MODULE
 // ============================================================================
-// This demonstrates our calculator with various test cases showing:
-// - Basic arithmetic with correct operator precedence
-// - Variable assignments and usage
-// - Complex expressions combining multiple features
+mod cli;
+
+use clap::{Arg, Command};
+use cli::CalculatorCLI;
+
+// ============================================================================
+// MAIN FUNCTION - CLI AND DEMONSTRATION
+// ============================================================================
+// Supports both interactive CLI mode and demonstration mode
 
 fn main() {
+    let matches = Command::new("Rust Calculator")
+        .version("1.0")
+        .author("Your Name")
+        .about("A mathematical calculator with lexer and parser")
+        .arg(
+            Arg::new("interactive")
+                .short('i')
+                .long("interactive")
+                .help("Start interactive CLI mode")
+                .action(clap::ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("expression")
+                .short('e')
+                .long("eval")
+                .value_name("EXPR")
+                .help("Evaluate a single expression")
+                .action(clap::ArgAction::Set),
+        )
+        .get_matches();
+
+    // Check for single expression evaluation
+    if let Some(expr) = matches.get_one::<String>("expression") {
+        evaluate_single_expression(expr);
+        return;
+    }
+
+    // Check for interactive mode
+    if matches.get_flag("interactive") {
+        match CalculatorCLI::new() {
+            Ok(mut cli) => {
+                if let Err(e) = cli.run() {
+                    eprintln!("CLI Error: {}", e);
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to start CLI: {}", e);
+            }
+        }
+        return;
+    }
+
+    // Default: run demonstration
+    run_demonstration();
+}
+
+/// Evaluate a single expression from command line
+fn evaluate_single_expression(expr: &str) {
+    let lexer = Lexer::new(expr);
+    let mut parser = Parser::new(lexer);
+    
+    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        parser.parse()
+    })) {
+        Ok(result) => println!("{}", result),
+        Err(_) => {
+            eprintln!("Error: Invalid expression");
+            std::process::exit(1);
+        }
+    }
+}
+
+/// Run the original demonstration
+fn run_demonstration() {
     let test_cases = vec![
         // Basic arithmetic - shows precedence works correctly
         "2 + 3",                      // Simple addition
