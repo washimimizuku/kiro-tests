@@ -214,7 +214,10 @@ impl Lexer {
                     
                     // Check if this is a known function name
                     return match identifier.as_str() {
-                        "sin" | "cos" | "tan" | "asin" | "acos" | "atan" => Token::Function(identifier),
+                        // Trigonometric functions
+                        "sin" | "cos" | "tan" | "asin" | "acos" | "atan" |
+                        // Mathematical functions
+                        "sqrt" | "abs" | "floor" | "ceil" | "round" => Token::Function(identifier),
                         _ => Token::Identifier(identifier),
                     };
                 }
@@ -285,14 +288,15 @@ impl Parser {
     /// Call a built-in function with the given argument
     /// This is our function table - maps function names to implementations
     /// 
-    /// Trigonometric functions:
-    ///   - sin, cos, tan: Basic trig functions (input in radians)
-    ///   - asin, acos, atan: Inverse trig functions (output in radians)
+    /// Function categories:
+    ///   - Trigonometric: sin, cos, tan (input in radians)
+    ///   - Inverse trig: asin, acos, atan (output in radians)
+    ///   - Mathematical: sqrt, abs, floor, ceil, round
     /// 
     /// Examples:
-    ///   - call_function("sin", 1.5708) → returns ≈ 1.0 (sin(π/2))
-    ///   - call_function("asin", 1.0) → returns ≈ 1.5708 (π/2)
-    ///   - call_function("acos", 0.0) → returns ≈ 1.5708 (π/2)
+    ///   - call_function("sqrt", 16.0) → returns 4.0
+    ///   - call_function("abs", -5.0) → returns 5.0
+    ///   - call_function("floor", 3.7) → returns 3.0
     fn call_function(&self, name: &str, arg: f64) -> f64 {
         match name {
             // Basic trigonometric functions
@@ -305,15 +309,23 @@ impl Parser {
             "acos" => arg.acos(),   // Returns value in [0, π]
             "atan" => arg.atan(),   // Returns value in (-π/2, π/2)
             
+            // Mathematical functions
+            "sqrt" => arg.sqrt(),   // Square root
+            "abs" => arg.abs(),     // Absolute value
+            "floor" => arg.floor(), // Round down to nearest integer
+            "ceil" => arg.ceil(),   // Round up to nearest integer
+            "round" => arg.round(), // Round to nearest integer
+            
             _ => panic!("Unknown function: {}", name),
         }
     }
 
     /// Parse a factor: the highest precedence elements
-    /// factor → NUMBER | IDENTIFIER | FUNCTION '(' expression ')' | '(' expression ')'
+    /// factor → NUMBER | IDENTIFIER | FUNCTION '(' expression ')' | '(' expression ')' | '-' factor
     /// 
     /// Examples:
     ///   - "42" → returns 42.0
+    ///   - "-5" → returns -5.0 (unary minus)
     ///   - "x" → looks up variable x and returns its value
     ///   - "sin(3.14)" → calls sin function with 3.14 and returns result
     ///   - "(2 + 3)" → recursively parses "2 + 3" and returns 5.0
@@ -344,6 +356,11 @@ impl Parser {
                 
                 // Call the appropriate function
                 self.call_function(&name, arg)
+            }
+            Token::Minus => {
+                // Found unary minus (negative number)
+                self.eat(Token::Minus);       // Consume the '-'
+                -self.factor()                // Recursively parse the factor and negate it
             }
             Token::LeftParen => {
                 // Found parentheses - parse the expression inside
@@ -586,11 +603,23 @@ fn main() {
         "atan(0)",                    // atan(0) = 0
         "atan(1)",                    // atan(1) = π/4 ≈ 0.7854
         
+        // Mathematical functions
+        "sqrt(16)",                   // sqrt(16) = 4
+        "sqrt(2)",                    // sqrt(2) ≈ 1.414
+        "abs(-5)",                    // abs(-5) = 5
+        "abs(3.7)",                   // abs(3.7) = 3.7
+        "floor(3.7)",                 // floor(3.7) = 3
+        "floor(-2.3)",                // floor(-2.3) = -3
+        "ceil(3.2)",                  // ceil(3.2) = 4
+        "ceil(-2.7)",                 // ceil(-2.7) = -2
+        "round(3.4)",                 // round(3.4) = 3
+        "round(3.6)",                 // round(3.6) = 4
+        
         // Functions with expressions
-        "sin(3.14159 / 2)",           // sin(π/2) ≈ 1
-        "asin(sin(0.5))",             // Should return 0.5 (inverse function)
-        "cos(acos(0.5))",             // Should return 0.5 (inverse function)
-        "x = 0.707; asin(x)",         // asin(√2/2) ≈ π/4
+        "sqrt(2 ^ 4)",                // sqrt(16) = 4
+        "abs(sin(-1))",               // abs(sin(-1)) = abs(-sin(1))
+        "floor(sqrt(10))",            // floor(√10) = floor(3.16...) = 3
+        "x = -7.8; abs(x)",           // abs(-7.8) = 7.8
     ];
 
     println!("=== RUST CALCULATOR DEMONSTRATION ===");
@@ -598,6 +627,7 @@ fn main() {
     println!("- Variables: x = 5");
     println!("- Arithmetic: + - * / % ^");
     println!("- Trigonometric functions: sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)");
+    println!("- Mathematical functions: sqrt(x), abs(x), floor(x), ceil(x), round(x)");
     println!("- Proper precedence: 2 + 3 * 4 = 14 (not 20)");
     println!("- Parentheses: (2 + 3) * 4 = 20");
     println!("- Multiple statements: x = 5; y = x + 2; x * y");
