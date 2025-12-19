@@ -214,7 +214,7 @@ impl Lexer {
                     
                     // Check if this is a known function name
                     return match identifier.as_str() {
-                        "sin" | "cos" | "tan" => Token::Function(identifier),
+                        "sin" | "cos" | "tan" | "asin" | "acos" | "atan" => Token::Function(identifier),
                         _ => Token::Identifier(identifier),
                     };
                 }
@@ -285,15 +285,26 @@ impl Parser {
     /// Call a built-in function with the given argument
     /// This is our function table - maps function names to implementations
     /// 
+    /// Trigonometric functions:
+    ///   - sin, cos, tan: Basic trig functions (input in radians)
+    ///   - asin, acos, atan: Inverse trig functions (output in radians)
+    /// 
     /// Examples:
-    ///   - call_function("sin", 3.14159) → returns ≈ 0.0
-    ///   - call_function("cos", 0.0) → returns 1.0
-    ///   - call_function("tan", 0.785398) → returns ≈ 1.0
+    ///   - call_function("sin", 1.5708) → returns ≈ 1.0 (sin(π/2))
+    ///   - call_function("asin", 1.0) → returns ≈ 1.5708 (π/2)
+    ///   - call_function("acos", 0.0) → returns ≈ 1.5708 (π/2)
     fn call_function(&self, name: &str, arg: f64) -> f64 {
         match name {
+            // Basic trigonometric functions
             "sin" => arg.sin(),
             "cos" => arg.cos(),
             "tan" => arg.tan(),
+            
+            // Inverse trigonometric functions
+            "asin" => arg.asin(),   // Returns value in [-π/2, π/2]
+            "acos" => arg.acos(),   // Returns value in [0, π]
+            "atan" => arg.atan(),   // Returns value in (-π/2, π/2)
+            
             _ => panic!("Unknown function: {}", name),
         }
     }
@@ -560,24 +571,33 @@ fn main() {
         "a = 10; b = 3; a % b",       // Variables with modulo: 10 % 3 = 1
         "base = 2; exp = 8; base ^ exp", // More descriptive variable names: 2^8 = 256
         
-        // Trigonometric functions
+        // Basic trigonometric functions
         "sin(0)",                     // sin(0) = 0
         "cos(0)",                     // cos(0) = 1
         "tan(0)",                     // tan(0) = 0
         "sin(1.5708)",                // sin(π/2) ≈ 1 (π/2 ≈ 1.5708)
         "cos(3.14159)",               // cos(π) ≈ -1
         
+        // Inverse trigonometric functions
+        "asin(0)",                    // asin(0) = 0
+        "asin(1)",                    // asin(1) = π/2 ≈ 1.5708
+        "acos(1)",                    // acos(1) = 0
+        "acos(0)",                    // acos(0) = π/2 ≈ 1.5708
+        "atan(0)",                    // atan(0) = 0
+        "atan(1)",                    // atan(1) = π/4 ≈ 0.7854
+        
         // Functions with expressions
         "sin(3.14159 / 2)",           // sin(π/2) ≈ 1
-        "cos(2 * 3.14159)",           // cos(2π) ≈ 1
-        "x = 3.14159; sin(x / 2)",    // Using variables with functions
+        "asin(sin(0.5))",             // Should return 0.5 (inverse function)
+        "cos(acos(0.5))",             // Should return 0.5 (inverse function)
+        "x = 0.707; asin(x)",         // asin(√2/2) ≈ π/4
     ];
 
     println!("=== RUST CALCULATOR DEMONSTRATION ===");
     println!("This calculator supports:");
     println!("- Variables: x = 5");
     println!("- Arithmetic: + - * / % ^");
-    println!("- Trigonometric functions: sin(x), cos(x), tan(x)");
+    println!("- Trigonometric functions: sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)");
     println!("- Proper precedence: 2 + 3 * 4 = 14 (not 20)");
     println!("- Parentheses: (2 + 3) * 4 = 20");
     println!("- Multiple statements: x = 5; y = x + 2; x * y");
