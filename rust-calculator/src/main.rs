@@ -6,6 +6,8 @@ pub enum Token {
     Minus,
     Multiply,
     Divide,
+    Power,               // ^ for exponentiation
+    Modulo,              // % for remainder
     LeftParen,
     RightParen,
     Assign,              // = for assignment
@@ -101,6 +103,14 @@ impl Lexer {
                     self.advance();
                     return Token::Divide;
                 }
+                '^' => {
+                    self.advance();
+                    return Token::Power;
+                }
+                '%' => {
+                    self.advance();
+                    return Token::Modulo;
+                }
                 '(' => {
                     self.advance();
                     return Token::LeftParen;
@@ -187,20 +197,37 @@ impl Parser {
         }
     }
 
-    // term: factor ((MUL | DIV) factor)*
-    fn term(&mut self) -> f64 {
+    // power: factor (^ factor)*
+    fn power(&mut self) -> f64 {
         let mut result = self.factor();
 
-        while matches!(self.current_token, Token::Multiply | Token::Divide) {
+        // Right associative: 2^3^2 = 2^(3^2) = 2^9 = 512
+        if matches!(self.current_token, Token::Power) {
+            self.eat(Token::Power);
+            result = result.powf(self.power()); // Recursive for right associativity
+        }
+
+        result
+    }
+
+    // term: power ((MUL | DIV | MOD) power)*
+    fn term(&mut self) -> f64 {
+        let mut result = self.power();
+
+        while matches!(self.current_token, Token::Multiply | Token::Divide | Token::Modulo) {
             let token = self.current_token.clone();
             match token {
                 Token::Multiply => {
                     self.eat(Token::Multiply);
-                    result *= self.factor();
+                    result *= self.power();
                 }
                 Token::Divide => {
                     self.eat(Token::Divide);
-                    result /= self.factor();
+                    result /= self.power();
+                }
+                Token::Modulo => {
+                    self.eat(Token::Modulo);
+                    result %= self.power();
                 }
                 _ => break,
             }
@@ -298,14 +325,27 @@ impl Parser {
 
 fn main() {
     let test_cases = vec![
-        "5",                           // Simple number
-        "2 + 3",                      // Simple expression  
-        "x = 5",                      // Variable assignment
-        "x = 5; x",                   // Assignment then use
-        "x = 5; y = x + 2",           // Multiple assignments
-        "x = 5; y = x + 2; x * y",    // Complex example
-        "a = 10; b = 20; (a + b) * 2", // Parentheses with variables
-        "pi = 3.14; radius = 5; pi * radius * radius", // More realistic example
+        // Basic arithmetic
+        "2 + 3",                      
+        "2 * 3 + 4",                  
+        
+        // New operators
+        "2 ^ 3",                      // Power: 2^3 = 8
+        "10 % 3",                     // Modulo: 10 % 3 = 1
+        "2 ^ 3 ^ 2",                  // Right associative: 2^(3^2) = 2^9 = 512
+        "2 + 3 ^ 2",                  // Precedence: 2 + (3^2) = 2 + 9 = 11
+        "2 * 3 ^ 2",                  // Precedence: 2 * (3^2) = 2 * 9 = 18
+        "(2 + 3) ^ 2",                // Parentheses: (2+3)^2 = 5^2 = 25
+        
+        // Mixed operations
+        "10 % 3 + 2",                 // 1 + 2 = 3
+        "2 ^ 3 * 4",                  // 8 * 4 = 32
+        "100 / 2 ^ 3",                // 100 / 8 = 12.5
+        
+        // Variables with new operators
+        "x = 2; y = 3; x ^ y",        // 2^3 = 8
+        "a = 10; b = 3; a % b",       // 10 % 3 = 1
+        "base = 2; exp = 8; base ^ exp", // 2^8 = 256
     ];
 
     for input in test_cases {
