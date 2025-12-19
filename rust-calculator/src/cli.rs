@@ -135,6 +135,7 @@ impl CalculatorCLI {
         println!("Functions:");
         println!("  sin(pi()/2)      Trigonometric: sin, cos, tan, asin, acos, atan");
         println!("  sqrt(16)         Mathematical: sqrt, abs, floor, ceil, round");
+        println!("  ln(e()), exp(1)  Logarithmic/exponential: ln, log10, log2, exp");
         println!("  pi(), e()        Constants");
         println!("  min(5, 3)        Multi-argument: min, max, pow, atan2");
         println!();

@@ -16,6 +16,7 @@ A complete implementation of a calculator that demonstrates how to build a **lex
 
 - **Trigonometric**: `sin(x)`, `cos(x)`, `tan(x)`, `asin(x)`, `acos(x)`, `atan(x)`
 - **Mathematical**: `sqrt(x)`, `abs(x)`, `floor(x)`, `ceil(x)`, `round(x)`
+- **Logarithmic/Exponential**: `ln(x)`, `log10(x)`, `log2(x)`, `exp(x)`
 - **Constants**: `pi()`, `e()`
 - **Multi-argument**: `min(x,y)`, `max(x,y)`, `pow(x,y)`, `atan2(y,x)`
 
@@ -145,6 +146,12 @@ ceil(3.2)        // = 4
 min(5, 3)        // = 3
 max(5, 3)        // = 5
 
+// Logarithmic and exponential
+ln(e())          // = 1 (natural log of e)
+log10(100)       // = 2 (log base 10)
+log2(8)          // = 3 (log base 2)
+exp(1)           // = e ≈ 2.718 (e^1)
+
 // Complex expressions
 sin(pi() / 4) * sqrt(2)     // ≈ 1.0
 min(abs(-7), sqrt(25))      // = 5
@@ -188,27 +195,16 @@ The code is heavily commented with:
 - **Design decisions**: Why certain choices were made
 - **Rust patterns**: Explanation of Rust-specific code
 
-## 🔧 Extending the Calculator
+## 🎓 Complete Mathematical Calculator
 
-Want to add more features? Try:
+This calculator provides a comprehensive set of mathematical operations and functions, making it suitable for:
 
-### Easy Additions
-- ✅ **Unary minus**: `-5` or `-(2 + 3)` - **IMPLEMENTED**
-- ✅ **Built-in functions**: `sin(3.14)`, `sqrt(16)` - **IMPLEMENTED**
-- **Comparison operators**: `==`, `!=`, `<`, `>`, `<=`, `>=`
-- **More math functions**: `log(x)`, `ln(x)`, `exp(x)`
+- **Educational purposes**: Learning lexer/parser implementation
+- **Mathematical calculations**: Scientific and engineering computations  
+- **Scripting**: Command-line mathematical operations
+- **Interactive exploration**: REPL for mathematical experimentation
 
-### Medium Complexity
-- **Boolean logic**: `&&`, `||`, `!`
-- **Conditional expressions**: `x > 5 ? 10 : 20`
-- **Block statements**: `{ x = 5; y = x + 2 }`
-- **Variable-argument functions**: `sum(1, 2, 3, 4)`
-
-### Advanced Features
-- **Control flow**: `if`, `while` loops
-- **User-defined functions**: `def square(x) { x * x }`
-- **Arrays**: `[1, 2, 3, 4]`
-- **String support**: `"hello " + "world"`
+The implementation demonstrates core compiler concepts while remaining focused on mathematical functionality.
 
 ## 🤝 Contributing
 

@@ -218,6 +218,8 @@ impl Lexer {
                         "sin" | "cos" | "tan" | "asin" | "acos" | "atan" |
                         // Mathematical functions
                         "sqrt" | "abs" | "floor" | "ceil" | "round" |
+                        // Logarithmic and exponential functions
+                        "ln" | "log10" | "log2" | "exp" |
                         // Mathematical constants (zero-argument functions)
                         "pi" | "e" |
                         // Multi-argument functions
@@ -319,6 +321,12 @@ impl Parser {
             "floor" => arg.floor(), // Round down to nearest integer
             "ceil" => arg.ceil(),   // Round up to nearest integer
             "round" => arg.round(), // Round to nearest integer
+            
+            // Logarithmic and exponential functions
+            "ln" => arg.ln(),       // Natural logarithm (base e)
+            "log10" => arg.log10(), // Base-10 logarithm
+            "log2" => arg.log2(),   // Base-2 logarithm
+            "exp" => arg.exp(),     // e^x (exponential function)
             
             _ => panic!("Unknown function: {}", name),
         }
@@ -755,6 +763,13 @@ fn run_demonstration() {
         "cos(pi())",                  // cos(π) ≈ -1
         "sin(pi() / 2)",              // sin(π/2) ≈ 1
         
+        // Logarithmic and exponential functions
+        "ln(e())",                    // ln(e) = 1
+        "log10(100)",                 // log10(100) = 2
+        "log2(8)",                    // log2(8) = 3
+        "exp(1)",                     // exp(1) = e ≈ 2.718
+        "exp(ln(5))",                 // exp(ln(5)) = 5 (inverse functions)
+        
         // Multi-argument functions
         "min(5, 3)",                  // min(5, 3) = 3
         "max(5, 3)",                  // max(5, 3) = 5
@@ -777,6 +792,7 @@ fn run_demonstration() {
     println!("- Arithmetic: + - * / % ^");
     println!("- Trigonometric functions: sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)");
     println!("- Mathematical functions: sqrt(x), abs(x), floor(x), ceil(x), round(x)");
+    println!("- Logarithmic/exponential: ln(x), log10(x), log2(x), exp(x)");
     println!("- Mathematical constants: pi(), e()");
     println!("- Multi-argument functions: min(x,y), max(x,y), pow(x,y), atan2(y,x)");
     println!("- Proper precedence: 2 + 3 * 4 = 14 (not 20)");
