@@ -219,7 +219,9 @@ impl Lexer {
                         // Mathematical functions
                         "sqrt" | "abs" | "floor" | "ceil" | "round" |
                         // Mathematical constants (zero-argument functions)
-                        "pi" | "e" => Token::Function(identifier),
+                        "pi" | "e" |
+                        // Multi-argument functions
+                        "min" | "max" | "pow" | "atan2" => Token::Function(identifier),
                         _ => Token::Identifier(identifier),
                     };
                 }
@@ -336,6 +338,23 @@ impl Parser {
         }
     }
 
+    /// Call a two-argument function
+    /// These functions take two arguments and return a result
+    /// 
+    /// Examples:
+    ///   - call_two_arg_function("min", 5.0, 3.0) → returns 3.0
+    ///   - call_two_arg_function("max", 5.0, 3.0) → returns 5.0
+    ///   - call_two_arg_function("pow", 2.0, 3.0) → returns 8.0
+    fn call_two_arg_function(&self, name: &str, arg1: f64, arg2: f64) -> f64 {
+        match name {
+            "min" => arg1.min(arg2),        // Minimum of two values
+            "max" => arg1.max(arg2),        // Maximum of two values
+            "pow" => arg1.powf(arg2),       // arg1 raised to power arg2
+            "atan2" => arg1.atan2(arg2),    // Two-argument arctangent (y, x)
+            _ => panic!("Unknown two-argument function: {}", name),
+        }
+    }
+
     /// Parse a factor: the highest precedence elements
     /// factor → NUMBER | IDENTIFIER | FUNCTION '(' expression ')' | '(' expression ')' | '-' factor
     /// 
@@ -368,14 +387,21 @@ impl Parser {
                 self.eat(Token::Function(String::new())); // Consume the function name
                 self.eat(Token::LeftParen);               // Consume '('
                 
-                // Check if this is a zero-argument function (constant)
+                // Determine function type and parse arguments accordingly
                 let result = match name.as_str() {
                     "pi" | "e" => {
                         // Zero-argument function (constant)
                         self.call_constant(&name)
                     }
+                    "min" | "max" | "pow" | "atan2" => {
+                        // Two-argument function
+                        let arg1 = self.expr();           // Parse first argument
+                        self.eat(Token::Comma);           // Consume ','
+                        let arg2 = self.expr();           // Parse second argument
+                        self.call_two_arg_function(&name, arg1, arg2)
+                    }
                     _ => {
-                        // Regular function with one argument
+                        // Single-argument function
                         let arg = self.expr();            // Parse the argument
                         self.call_function(&name, arg)
                     }
@@ -650,11 +676,20 @@ fn main() {
         "cos(pi())",                  // cos(π) ≈ -1
         "sin(pi() / 2)",              // sin(π/2) ≈ 1
         
+        // Multi-argument functions
+        "min(5, 3)",                  // min(5, 3) = 3
+        "max(5, 3)",                  // max(5, 3) = 5
+        "min(-2, -7)",                // min(-2, -7) = -7
+        "max(1.5, 1.2)",              // max(1.5, 1.2) = 1.5
+        "pow(2, 3)",                  // pow(2, 3) = 8 (alternative to 2^3)
+        "pow(4, 0.5)",                // pow(4, 0.5) = 2 (square root)
+        "atan2(1, 1)",                // atan2(1, 1) = π/4 ≈ 0.7854
+        
         // Functions with expressions
-        "sqrt(2 ^ 4)",                // sqrt(16) = 4
-        "abs(sin(-1))",               // abs(sin(-1)) = abs(-sin(1))
-        "floor(sqrt(10))",            // floor(√10) = floor(3.16...) = 3
-        "x = pi(); sin(x / 2)",       // Using constants with variables
+        "min(2 + 3, 4 * 2)",          // min(5, 8) = 5
+        "max(sqrt(16), abs(-3))",     // max(4, 3) = 4
+        "pow(sin(pi()/2), 2)",        // pow(1, 2) = 1
+        "x = 10; y = 3; min(x, y)",   // Using variables with multi-arg functions
     ];
 
     println!("=== RUST CALCULATOR DEMONSTRATION ===");
@@ -664,6 +699,7 @@ fn main() {
     println!("- Trigonometric functions: sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)");
     println!("- Mathematical functions: sqrt(x), abs(x), floor(x), ceil(x), round(x)");
     println!("- Mathematical constants: pi(), e()");
+    println!("- Multi-argument functions: min(x,y), max(x,y), pow(x,y), atan2(y,x)");
     println!("- Proper precedence: 2 + 3 * 4 = 14 (not 20)");
     println!("- Parentheses: (2 + 3) * 4 = 20");
     println!("- Multiple statements: x = 5; y = x + 2; x * y");
