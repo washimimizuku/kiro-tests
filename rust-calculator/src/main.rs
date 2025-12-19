@@ -46,8 +46,12 @@ pub enum Token {
     // Grouping and structure
     LeftParen,           // ( for grouping expressions
     RightParen,          // ) for grouping expressions
+    Comma,               // , for function arguments (future use)
     Assign,              // = for variable assignment
     Semicolon,           // ; to separate statements
+    
+    // Functions
+    Function(String),    // Function names like "sin", "cos", "tan"
     
     // Special
     EOF,                 // End of file/input marker
@@ -193,6 +197,10 @@ impl Lexer {
                     self.advance();
                     return Token::Semicolon;
                 }
+                ',' => {
+                    self.advance();
+                    return Token::Comma;
+                }
                 
                 // Multi-character tokens: use helper methods
                 _ if ch.is_ascii_digit() => {
@@ -203,7 +211,12 @@ impl Lexer {
                 _ if ch.is_ascii_alphabetic() || ch == '_' => {
                     // Found a letter or underscore, read the complete identifier
                     let identifier = self.read_identifier();
-                    return Token::Identifier(identifier);
+                    
+                    // Check if this is a known function name
+                    return match identifier.as_str() {
+                        "sin" | "cos" | "tan" => Token::Function(identifier),
+                        _ => Token::Identifier(identifier),
+                    };
                 }
                 
                 // Unknown character: this is an error
@@ -269,12 +282,29 @@ impl Parser {
         }
     }
 
+    /// Call a built-in function with the given argument
+    /// This is our function table - maps function names to implementations
+    /// 
+    /// Examples:
+    ///   - call_function("sin", 3.14159) → returns ≈ 0.0
+    ///   - call_function("cos", 0.0) → returns 1.0
+    ///   - call_function("tan", 0.785398) → returns ≈ 1.0
+    fn call_function(&self, name: &str, arg: f64) -> f64 {
+        match name {
+            "sin" => arg.sin(),
+            "cos" => arg.cos(),
+            "tan" => arg.tan(),
+            _ => panic!("Unknown function: {}", name),
+        }
+    }
+
     /// Parse a factor: the highest precedence elements
-    /// factor → NUMBER | IDENTIFIER | '(' expression ')'
+    /// factor → NUMBER | IDENTIFIER | FUNCTION '(' expression ')' | '(' expression ')'
     /// 
     /// Examples:
     ///   - "42" → returns 42.0
     ///   - "x" → looks up variable x and returns its value
+    ///   - "sin(3.14)" → calls sin function with 3.14 and returns result
     ///   - "(2 + 3)" → recursively parses "2 + 3" and returns 5.0
     fn factor(&mut self) -> f64 {
         let token = self.current_token.clone();
@@ -293,6 +323,16 @@ impl Parser {
                 *self.variables.get(&name).unwrap_or_else(|| {
                     panic!("Undefined variable: {}", name);
                 })
+            }
+            Token::Function(name) => {
+                // Found a function call
+                self.eat(Token::Function(String::new())); // Consume the function name
+                self.eat(Token::LeftParen);               // Consume '('
+                let arg = self.expr();                    // Parse the argument
+                self.eat(Token::RightParen);              // Consume ')'
+                
+                // Call the appropriate function
+                self.call_function(&name, arg)
             }
             Token::LeftParen => {
                 // Found parentheses - parse the expression inside
@@ -519,12 +559,25 @@ fn main() {
         "x = 2; y = 3; x ^ y",        // Assign variables, then use: 2^3 = 8
         "a = 10; b = 3; a % b",       // Variables with modulo: 10 % 3 = 1
         "base = 2; exp = 8; base ^ exp", // More descriptive variable names: 2^8 = 256
+        
+        // Trigonometric functions
+        "sin(0)",                     // sin(0) = 0
+        "cos(0)",                     // cos(0) = 1
+        "tan(0)",                     // tan(0) = 0
+        "sin(1.5708)",                // sin(π/2) ≈ 1 (π/2 ≈ 1.5708)
+        "cos(3.14159)",               // cos(π) ≈ -1
+        
+        // Functions with expressions
+        "sin(3.14159 / 2)",           // sin(π/2) ≈ 1
+        "cos(2 * 3.14159)",           // cos(2π) ≈ 1
+        "x = 3.14159; sin(x / 2)",    // Using variables with functions
     ];
 
     println!("=== RUST CALCULATOR DEMONSTRATION ===");
     println!("This calculator supports:");
     println!("- Variables: x = 5");
     println!("- Arithmetic: + - * / % ^");
+    println!("- Trigonometric functions: sin(x), cos(x), tan(x)");
     println!("- Proper precedence: 2 + 3 * 4 = 14 (not 20)");
     println!("- Parentheses: (2 + 3) * 4 = 20");
     println!("- Multiple statements: x = 5; y = x + 2; x * y");
