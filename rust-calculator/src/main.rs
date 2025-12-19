@@ -217,7 +217,9 @@ impl Lexer {
                         // Trigonometric functions
                         "sin" | "cos" | "tan" | "asin" | "acos" | "atan" |
                         // Mathematical functions
-                        "sqrt" | "abs" | "floor" | "ceil" | "round" => Token::Function(identifier),
+                        "sqrt" | "abs" | "floor" | "ceil" | "round" |
+                        // Mathematical constants (zero-argument functions)
+                        "pi" | "e" => Token::Function(identifier),
                         _ => Token::Identifier(identifier),
                     };
                 }
@@ -320,6 +322,20 @@ impl Parser {
         }
     }
 
+    /// Call a mathematical constant (zero-argument function)
+    /// These are functions that take no arguments and return constant values
+    /// 
+    /// Examples:
+    ///   - call_constant("pi") → returns π ≈ 3.14159
+    ///   - call_constant("e") → returns e ≈ 2.71828
+    fn call_constant(&self, name: &str) -> f64 {
+        match name {
+            "pi" => std::f64::consts::PI,  // π ≈ 3.14159265359
+            "e" => std::f64::consts::E,    // e ≈ 2.71828182846
+            _ => panic!("Unknown constant: {}", name),
+        }
+    }
+
     /// Parse a factor: the highest precedence elements
     /// factor → NUMBER | IDENTIFIER | FUNCTION '(' expression ')' | '(' expression ')' | '-' factor
     /// 
@@ -351,11 +367,22 @@ impl Parser {
                 // Found a function call
                 self.eat(Token::Function(String::new())); // Consume the function name
                 self.eat(Token::LeftParen);               // Consume '('
-                let arg = self.expr();                    // Parse the argument
-                self.eat(Token::RightParen);              // Consume ')'
                 
-                // Call the appropriate function
-                self.call_function(&name, arg)
+                // Check if this is a zero-argument function (constant)
+                let result = match name.as_str() {
+                    "pi" | "e" => {
+                        // Zero-argument function (constant)
+                        self.call_constant(&name)
+                    }
+                    _ => {
+                        // Regular function with one argument
+                        let arg = self.expr();            // Parse the argument
+                        self.call_function(&name, arg)
+                    }
+                };
+                
+                self.eat(Token::RightParen);              // Consume ')'
+                result
             }
             Token::Minus => {
                 // Found unary minus (negative number)
@@ -615,11 +642,19 @@ fn main() {
         "round(3.4)",                 // round(3.4) = 3
         "round(3.6)",                 // round(3.6) = 4
         
+        // Mathematical constants
+        "pi()",                       // π ≈ 3.14159
+        "e()",                        // e ≈ 2.71828
+        "2 * pi()",                   // 2π ≈ 6.28318
+        "sin(pi())",                  // sin(π) ≈ 0
+        "cos(pi())",                  // cos(π) ≈ -1
+        "sin(pi() / 2)",              // sin(π/2) ≈ 1
+        
         // Functions with expressions
         "sqrt(2 ^ 4)",                // sqrt(16) = 4
         "abs(sin(-1))",               // abs(sin(-1)) = abs(-sin(1))
         "floor(sqrt(10))",            // floor(√10) = floor(3.16...) = 3
-        "x = -7.8; abs(x)",           // abs(-7.8) = 7.8
+        "x = pi(); sin(x / 2)",       // Using constants with variables
     ];
 
     println!("=== RUST CALCULATOR DEMONSTRATION ===");
@@ -628,6 +663,7 @@ fn main() {
     println!("- Arithmetic: + - * / % ^");
     println!("- Trigonometric functions: sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)");
     println!("- Mathematical functions: sqrt(x), abs(x), floor(x), ceil(x), round(x)");
+    println!("- Mathematical constants: pi(), e()");
     println!("- Proper precedence: 2 + 3 * 4 = 14 (not 20)");
     println!("- Parentheses: (2 + 3) * 4 = 20");
     println!("- Multiple statements: x = 5; y = x + 2; x * y");
