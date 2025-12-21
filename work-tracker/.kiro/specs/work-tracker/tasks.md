@@ -58,48 +58,49 @@ This implementation plan transforms the Work Tracker design into a series of inc
     - Test error handling for invalid credentials
     - _Requirements: 5.1, 5.2, 5.5_
 
-- [ ] 4. Activity Service Core Implementation
-  - [ ] 4.1 Implement activity CRUD operations
+- [x] 4. Activity Service Core Implementation
+  - [x] 4.1 Implement activity CRUD operations
     - Create, read, update, delete activity endpoints
     - Add activity validation and categorization
     - Implement tag management functionality
     - _Requirements: 1.1, 1.2, 4.1, 4.2_
 
-  - [ ] 4.2 Write property test for activity operations
+  - [x] 4.2 Write property test for activity operations
     - **Property 1: Activity Lifecycle Consistency**
     - **Property 8: Tag Management Consistency**
     - **Validates: Requirements 1.2, 1.4, 4.2, 4.5**
 
-  - [ ] 4.3 Implement activity filtering and search
+  - [x] 4.3 Implement activity filtering and search
     - Add filtering by category, tags, and date ranges
     - Implement full-text search functionality
     - Create auto-complete suggestions for activity titles
     - _Requirements: 1.3, 1.5, 4.3_
 
-  - [ ] 4.4 Write property test for activity filtering
+  - [x] 4.4 Write property test for activity filtering
     - **Property 2: Auto-complete Suggestion Accuracy**
     - **Property 3: Activity Display and Filtering**
     - **Validates: Requirements 1.3, 1.5, 4.3**
+    - **Status: COMPLETE** ✅ (All 11 tests passing - async mocking issues resolved)
 
-- [ ] 5. Story Service Implementation
-  - [ ] 5.1 Implement story CRUD operations
+- [x] 5. Story Service Implementation
+  - [x] 5.1 Implement story CRUD operations
     - Create story endpoints with STAR format validation
     - Add story status management (draft, complete, published)
     - Implement story search and filtering
     - _Requirements: 2.1, 2.3, 2.4_
 
-  - [ ] 5.2 Write property test for story management
+  - [x] 5.2 Write property test for story management
     - **Property 4: Story Enhancement and Validation**
     - **Property 5: Story Management Operations**
     - **Validates: Requirements 2.2, 2.3, 2.4, 2.5**
 
-  - [ ] 5.3 Implement story metadata and tagging
+  - [x] 5.3 Implement story metadata and tagging
     - Add impact metrics tracking
     - Implement story categorization
     - Create story templates and guidance
     - _Requirements: 2.3, 2.5_
 
-  - [ ] 5.4 Write unit tests for story service
+  - [x] 5.4 Write unit tests for story service
     - Test STAR format validation
     - Test story completeness checking
     - _Requirements: 2.1, 2.3, 2.5_

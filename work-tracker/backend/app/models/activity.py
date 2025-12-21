@@ -37,7 +37,7 @@ class Activity(Base, TimestampMixin):
     impact_level = Column(Integer, CheckConstraint("impact_level >= 1 AND impact_level <= 5"))
     date = Column(Date, nullable=False, index=True)
     duration_minutes = Column(Integer)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column(JSON, default=dict)
     
     # Relationships
     user = relationship("User", back_populates="activities")

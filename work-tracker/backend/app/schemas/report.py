@@ -87,6 +87,6 @@ class ReportGenerationRequest(BaseModel):
 
 class ReportExportRequest(BaseModel):
     """Schema for report export requests."""
-    format: str = Field(..., regex="^(pdf|docx|html)$")
+    format: str = Field(..., pattern="^(pdf|docx|html)$")
     include_charts: bool = True
     include_raw_data: bool = False

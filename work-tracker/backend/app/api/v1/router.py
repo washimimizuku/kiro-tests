@@ -9,8 +9,8 @@ from fastapi import APIRouter
 
 # Import service routers
 from app.services.auth.router import router as auth_router
-# from app.services.activities.router import router as activities_router
-# from app.services.stories.router import router as stories_router
+from app.services.activities.router import router as activities_router
+from app.services.stories.router import router as stories_router
 # from app.services.reports.router import router as reports_router
 # from app.services.ai.router import router as ai_router
 
@@ -26,8 +26,8 @@ async def api_health():
         "api_version": "v1",
         "services": {
             "auth": "healthy",
-            "activities": "pending", 
-            "stories": "pending",
+            "activities": "healthy", 
+            "stories": "healthy",
             "reports": "pending",
             "ai": "pending",
         }
@@ -35,7 +35,7 @@ async def api_health():
 
 # Include service routers
 api_router.include_router(auth_router, prefix="/auth", tags=["authentication"])
-# api_router.include_router(activities_router, prefix="/activities", tags=["activities"])
-# api_router.include_router(stories_router, prefix="/stories", tags=["stories"])
+api_router.include_router(activities_router, prefix="/activities", tags=["activities"])
+api_router.include_router(stories_router, prefix="/stories", tags=["stories"])
 # api_router.include_router(reports_router, prefix="/reports", tags=["reports"])
 # api_router.include_router(ai_router, prefix="/ai", tags=["ai"])

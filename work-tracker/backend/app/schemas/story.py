@@ -78,7 +78,7 @@ class StoryFilters(BaseModel):
 class StoryEnhancementRequest(BaseModel):
     """Schema for AI story enhancement requests."""
     story_id: UUID
-    enhancement_type: str = Field(..., regex="^(improve|quantify|complete)$")
+    enhancement_type: str = Field(..., pattern="^(improve|quantify|complete)$")
     focus_areas: Optional[List[str]] = None
 
 
