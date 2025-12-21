@@ -1,6 +1,6 @@
 # Kiro Testing Ground
 
-A comprehensive testing repository for exploring [Kiro CLI](https://kiro.ai) and Kiro IDE capabilities across diverse programming languages, frameworks, and project architectures.
+A comprehensive testing repository for exploring [Kiro](https://kiro.ai) IDE and CLI capabilities across diverse programming languages, frameworks, and project architectures.
 
 ## 🎯 Purpose
 
