@@ -30,14 +30,32 @@ This repository serves as a practical testing ground to evaluate Kiro's AI-power
 - **Features**: Full-stack web application, AI integration (AWS Bedrock), authentication
 - **Directory**: `work-tracker/`
 
-### Mobile Development
+### Full-Stack Ecosystem
 
-#### **Bird Watching App**
-- **Languages**: Dart, TypeScript, Rust
-- **Frameworks**: Flutter, React, FastAPI
-- **Architecture**: Multi-platform mobile app with backend services
-- **Features**: Cross-platform mobile development, geolocation, image processing
+#### **Bird Watching Platform** 
+- **Architecture**: Complete multi-platform ecosystem with 3 integrated applications
 - **Directory**: `my-birds/`
+
+**Backend Service** (`bird-watching-backend/`)
+- **Language**: Rust
+- **Framework**: Actix-web
+- **Database**: PostgreSQL with SQLx
+- **Features**: REST API, JWT authentication, geolocation services, file uploads
+- **Testing**: Property-based testing with proptest
+
+**Web Application** (`bird-watching-frontend/`)
+- **Language**: TypeScript
+- **Framework**: React 19 with Vite
+- **Mapping**: Leaflet with marker clustering
+- **Features**: Interactive maps, GPS integration, responsive design
+- **Testing**: Vitest with fast-check property testing
+
+**Mobile Application** (`bird-watching-mobile/`)
+- **Language**: Dart
+- **Framework**: Flutter (iOS/Android)
+- **Architecture**: Clean Architecture with BLoC pattern
+- **Features**: Offline-first, camera integration, GPS tracking, secure storage
+- **Testing**: Unit, widget, and integration tests
 
 ### CLI & System Tools
 
@@ -65,17 +83,20 @@ This repository serves as a practical testing ground to evaluate Kiro's AI-power
 - **Dart** - Flutter mobile applications
 
 ### Frameworks & Libraries
-- **Backend**: FastAPI, Axum, Express.js
+- **Backend**: FastAPI, Actix-web, Axum, Express.js
 - **Frontend**: React, Flutter
+- **Mobile**: Flutter (iOS/Android), BLoC pattern, Clean Architecture
+- **Mapping**: Leaflet, Google Maps, marker clustering
 - **Testing**: pytest, Hypothesis, Vitest, fast-check, proptest
-- **Databases**: PostgreSQL, SQLite
+- **Databases**: PostgreSQL, SQLite, SQLx
 - **Cloud**: AWS (Bedrock, Cognito, ECS, S3)
 
 ### Architecture Patterns
-- **Microservices** - Distributed service architectures
-- **Monolithic** - Single-service applications  
-- **Full-stack** - Integrated frontend/backend solutions
-- **Mobile-first** - Cross-platform mobile applications
+- **Microservices** - Distributed service architectures (Work Tracker)
+- **Monolithic** - Single-service applications (Country Data APIs)
+- **Full-stack** - Integrated frontend/backend solutions (Work Tracker)
+- **Multi-platform Ecosystem** - Complete platform with web, mobile, and API (Bird Watching)
+- **Mobile-first** - Cross-platform mobile applications with offline support
 - **CLI Tools** - Command-line utilities and scripts
 
 ## 📁 Repository Structure
@@ -86,7 +107,10 @@ kiro-tests/
 ├── country-data-api-rust/         # Rust Axum equivalent
 ├── country-data-api-rust-kiro/    # Kiro-enhanced Rust version
 ├── work-tracker/                  # Full-stack TypeScript/Python app
-├── my-birds/                      # Flutter mobile app ecosystem
+├── my-birds/                      # Multi-platform bird watching ecosystem
+│   ├── bird-watching-backend/     # Rust Actix-web API service
+│   ├── bird-watching-frontend/    # React TypeScript web app
+│   └── bird-watching-mobile/      # Flutter mobile app (iOS/Android)
 ├── rust-calculator/               # Rust CLI application
 ├── professional-activity-tracker/ # Python productivity tool
 └── README.md                      # This file
@@ -155,8 +179,17 @@ Each project explores different testing approaches with Kiro:
    # Full-stack application
    cd work-tracker && docker-compose up
    
-   # Flutter mobile app
-   cd my-birds/bird-watching-mobile && flutter run
+   # Multi-platform bird watching ecosystem
+   cd my-birds
+   
+   # Start backend (Rust Actix-web)
+   cd bird-watching-backend && cargo run
+   
+   # Start web frontend (React + Leaflet maps)
+   cd ../bird-watching-frontend && npm install && npm run dev
+   
+   # Run mobile app (Flutter)
+   cd ../bird-watching-mobile && flutter run
    ```
 
 3. **Run Tests**
@@ -169,6 +202,18 @@ Each project explores different testing approaches with Kiro:
    
    # TypeScript tests with fast-check
    cd work-tracker/frontend && npm test
+   
+   # Multi-platform ecosystem tests
+   cd my-birds
+   
+   # Backend property tests (Rust proptest)
+   cd bird-watching-backend && cargo test
+   
+   # Frontend tests (React + fast-check)
+   cd ../bird-watching-frontend && npm test
+   
+   # Mobile tests (Flutter)
+   cd ../bird-watching-mobile && flutter test
    ```
 
 ## 📊 Project Status
@@ -178,7 +223,10 @@ Each project explores different testing approaches with Kiro:
 | Country Data API | Python | ✅ Complete | API generation, testing, documentation |
 | Country Data API (Rust) | Rust | ✅ Complete | Cross-language porting, property testing |
 | Work Tracker | TypeScript/Python | 🚧 In Progress | Full-stack development, AI integration |
-| Bird Watching App | Dart/Flutter | ✅ Complete | Mobile development, multi-service architecture |
+| **Bird Watching Platform** | **Multi-platform** | ✅ **Complete** | **Ecosystem development, cross-platform** |
+| ├─ Backend Service | Rust | ✅ Complete | API development, geolocation, file handling |
+| ├─ Web Application | TypeScript/React | ✅ Complete | Interactive maps, responsive design |
+| └─ Mobile Application | Dart/Flutter | ✅ Complete | Offline-first, camera, GPS, clean architecture |
 | Rust Calculator | Rust | ✅ Complete | CLI development, argument parsing |
 | Activity Tracker | Python | ✅ Complete | Data processing, report generation |
 
