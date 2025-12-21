@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Activity, BookOpen, FileText, Home, LogOut, User } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useAuth } from '@/contexts/AuthContext'
+import { SyncStatusIndicator } from '@/components/SyncStatusIndicator'
 import toast from 'react-hot-toast'
 
 const navigation = [
@@ -53,6 +54,7 @@ export default function Navigation() {
           </div>
           
           <div className="flex items-center space-x-4">
+            <SyncStatusIndicator />
             {user && (
               <div className="flex items-center text-sm text-gray-700">
                 <User className="w-4 h-4 mr-2" />

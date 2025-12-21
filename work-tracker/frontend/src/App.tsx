@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import OfflineIndicator from '@/components/OfflineIndicator'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
@@ -29,6 +30,8 @@ function App() {
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      
+      <OfflineIndicator />
       
       <Toaster
         position="top-right"
