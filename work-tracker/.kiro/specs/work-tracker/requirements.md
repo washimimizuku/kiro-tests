@@ -4,6 +4,8 @@
 
 Work Tracker is a web-based professional activity tracking system that helps users log daily activities, create impactful customer stories, and generate automated reports for career advancement and performance reviews. The system integrates with AWS Bedrock for AI-powered report generation and story enhancement.
 
+The backend uses Poetry for Python dependency management and virtual environment isolation, ensuring consistent and reproducible development environments. All backend commands should be executed using `poetry run` to ensure proper virtual environment activation.
+
 ## Glossary
 
 - **Activity**: Any professional work item including customer engagements, learning, speaking, mentoring, or technical consultations
@@ -13,6 +15,8 @@ Work Tracker is a web-based professional activity tracking system that helps use
 - **API_Gateway**: The FastAPI backend services
 - **AI_Service**: AWS Bedrock integration service for content generation
 - **Database**: PostgreSQL database storing all activity and user data
+- **Poetry**: Python dependency management and virtual environment tool used for backend development
+- **Virtual_Environment**: Isolated Python environment managed by Poetry for consistent dependency management
 
 ## Requirements
 
@@ -111,3 +115,15 @@ Work Tracker is a web-based professional activity tracking system that helps use
 3. WHEN reviewing suggested activities, THE Web_App SHALL allow users to accept, modify, or reject suggestions
 4. WHEN calendar sync is enabled, THE API_Gateway SHALL respect user privacy settings and data retention policies
 5. WHEN integration fails, THE Web_App SHALL provide clear error messages and manual entry alternatives
+
+### Requirement 9
+
+**User Story:** As a developer, I want to use Poetry for dependency management and virtual environments, so that I can ensure consistent and reproducible development environments across different machines and deployments.
+
+#### Acceptance Criteria
+
+1. WHEN setting up the backend development environment, THE Developer SHALL use Poetry to manage Python dependencies and virtual environments
+2. WHEN installing dependencies, THE Poetry SHALL create an isolated virtual environment with all required packages
+3. WHEN running tests or development commands, THE Developer SHALL use `poetry run` to execute commands within the Poetry virtual environment
+4. WHEN adding new dependencies, THE Poetry SHALL update both pyproject.toml and poetry.lock files for reproducible builds
+5. WHEN deploying or sharing the project, THE Poetry SHALL ensure consistent dependency versions across all environments
