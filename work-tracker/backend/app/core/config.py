@@ -48,6 +48,16 @@ class Settings(BaseSettings):
     BEDROCK_MAX_TOKENS: int = 4000
     BEDROCK_TEMPERATURE: float = 0.1
     
+    # Google Calendar OAuth
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/calendar/oauth/google/callback"
+    
+    # Microsoft Outlook OAuth
+    MICROSOFT_CLIENT_ID: Optional[str] = None
+    MICROSOFT_CLIENT_SECRET: Optional[str] = None
+    MICROSOFT_REDIRECT_URI: str = "http://localhost:8000/api/v1/calendar/oauth/outlook/callback"
+    
     # CORS
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
@@ -95,6 +105,11 @@ class Settings(BaseSettings):
 
 # Create global settings instance
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    """Get application settings instance."""
+    return settings
 
 
 def get_database_url() -> str:

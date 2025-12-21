@@ -27,6 +27,9 @@ class User(Base, TimestampMixin):
     activities = relationship("Activity", back_populates="user", cascade="all, delete-orphan")
     stories = relationship("Story", back_populates="user", cascade="all, delete-orphan")
     reports = relationship("Report", back_populates="user", cascade="all, delete-orphan")
+    calendar_connections = relationship("CalendarConnection", back_populates="user", cascade="all, delete-orphan")
+    activity_suggestions = relationship("ActivitySuggestion", back_populates="user", cascade="all, delete-orphan")
+    calendar_settings = relationship("CalendarIntegrationSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"

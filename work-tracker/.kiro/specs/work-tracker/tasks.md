@@ -224,20 +224,20 @@ This implementation plan transforms the Work Tracker design into a series of inc
     - Implement data validation for imports
     - _Requirements: 6.1, 6.2_
 
-- [ ] 13. Calendar Integration
-  - [ ] 13.1 Implement calendar OAuth integration
+- [x] 13. Calendar Integration
+  - [x] 13.1 Implement calendar OAuth integration
     - Set up OAuth flows for Google Calendar and Outlook
     - Create calendar connection management
     - Add calendar event synchronization
     - _Requirements: 8.1, 8.4_
 
-  - [ ] 13.2 Create AI-powered activity suggestions
+  - [x] 13.2 Create AI-powered activity suggestions
     - Implement meeting analysis for activity suggestions
     - Add suggestion review and management interface
     - Create suggestion acceptance and modification workflows
     - _Requirements: 8.2, 8.3_
 
-  - [ ] 13.3 Write property test for calendar integration
+  - [x] 13.3 Write property test for calendar integration
     - **Property 13: Calendar Integration Workflow**
     - **Validates: Requirements 8.1, 8.2, 8.3**
 

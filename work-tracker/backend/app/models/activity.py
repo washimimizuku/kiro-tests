@@ -41,6 +41,7 @@ class Activity(Base, TimestampMixin):
     
     # Relationships
     user = relationship("User", back_populates="activities")
+    activity_suggestions = relationship("ActivitySuggestion", back_populates="activity")
     
     # Constraints
     __table_args__ = (

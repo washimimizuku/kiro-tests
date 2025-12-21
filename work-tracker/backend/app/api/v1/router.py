@@ -14,6 +14,7 @@ from app.services.stories.router import router as stories_router
 from app.services.ai.router import router as ai_router
 from app.services.reports.router import router as reports_router
 from app.services.export.router import router as export_router
+from app.services.calendar.router import router as calendar_router
 
 # Create main API router
 api_router = APIRouter()
@@ -32,6 +33,7 @@ async def api_health():
             "ai": "healthy",
             "reports": "healthy",
             "export": "healthy",
+            "calendar": "healthy",
         }
     }
 
@@ -42,3 +44,4 @@ api_router.include_router(stories_router, prefix="/stories", tags=["stories"])
 api_router.include_router(ai_router, prefix="/ai", tags=["ai"])
 api_router.include_router(reports_router, prefix="/reports", tags=["reports"])
 api_router.include_router(export_router, prefix="/export", tags=["export"])
+api_router.include_router(calendar_router, prefix="/calendar", tags=["calendar"])
