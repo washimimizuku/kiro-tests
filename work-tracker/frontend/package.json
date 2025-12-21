@@ -13,7 +13,10 @@
     "type-check": "tsc --noEmit",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:ci": "vitest --run --reporter=verbose",
+    "test:integration": "vitest --run src/test/integration/",
+    "test:properties": "vitest --run src/test/ --testNamePattern=\"properties\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",

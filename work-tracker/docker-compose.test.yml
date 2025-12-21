@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Testing
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: work-tracker-test-db
+    environment:
+      POSTGRES_DB: work_tracker_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d work_tracker_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache for Testing
+  redis-test:
+    image: redis:7-alpine
+    container_name: work-tracker-test-redis
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    volumes:
+      - redis_test_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend API for Integration Testing
+  api-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: work-tracker-test-api
+    environment:
+      - DATABASE_URL=postgresql://test_user:test_password@postgres-test:5432/work_tracker_test
+      - REDIS_URL=redis://redis-test:6379
+      - AWS_REGION=us-east-1
+      - ENVIRONMENT=test
+      - LOG_LEVEL=INFO
+    ports:
+      - "8001:8000"  # Different port to avoid conflicts
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  # Frontend for Integration Testing
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: work-tracker-test-frontend
+    ports:
+      - "3001:3000"  # Different port to avoid conflicts
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8001
+      - REACT_APP_ENVIRONMENT=test
+    depends_on:
+      api-test:
+        condition: service_healthy
+
+  # Integration Test Runner
+  integration-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: work-tracker-integration-tests
+    environment:
+      - API_BASE_URL=http://api-test:8000
+      - DATABASE_URL=postgresql://test_user:test_password@postgres-test:5432/work_tracker_test
+      - REDIS_URL=redis://redis-test:6379
+      - AWS_REGION=us-east-1
+      - ENVIRONMENT=test
+    depends_on:
+      api-test:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./test-results:/app/test-results
+    working_dir: /app
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 10 &&
+        echo 'Running integration tests...' &&
+        poetry run pytest tests/integration/ -v --junitxml=test-results/integration-results.xml --html=test-results/integration-report.html --self-contained-html
+      "
+    profiles:
+      - test
+
+volumes:
+  postgres_test_data:
+  redis_test_data:
+
+networks:
+  default:
+    name: work-tracker-test-network
