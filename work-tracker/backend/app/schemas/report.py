@@ -22,6 +22,7 @@ class ReportBase(BaseModel):
 
 class ReportCreate(ReportBase):
     """Schema for creating a new report."""
+    content: Optional[str] = None
     activities_included: Optional[List[UUID]] = Field(default_factory=list)
     stories_included: Optional[List[UUID]] = Field(default_factory=list)
 
@@ -31,6 +32,8 @@ class ReportUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=500)
     content: Optional[str] = None
     status: Optional[ReportStatus] = None
+    activities_included: Optional[List[UUID]] = None
+    stories_included: Optional[List[UUID]] = None
 
 
 class ReportResponse(ReportBase):
@@ -75,10 +78,11 @@ class ReportFilters(BaseModel):
 
 class ReportGenerationRequest(BaseModel):
     """Schema for report generation requests."""
-    title: str = Field(..., min_length=1, max_length=500)
+    title: Optional[str] = Field(None, min_length=1, max_length=500)
     period_start: date
     period_end: date
     report_type: ReportType
+    custom_instructions: Optional[str] = None
     include_activities: bool = True
     include_stories: bool = True
     activity_categories: Optional[List[str]] = None
@@ -87,6 +91,16 @@ class ReportGenerationRequest(BaseModel):
 
 class ReportExportRequest(BaseModel):
     """Schema for report export requests."""
+    report_id: UUID
     format: str = Field(..., pattern="^(pdf|docx|html)$")
     include_charts: bool = True
     include_raw_data: bool = False
+
+
+class ReportExportResponse(BaseModel):
+    """Schema for report export responses."""
+    report_id: UUID
+    format: str
+    download_url: str
+    expires_at: datetime
+    file_size: int
