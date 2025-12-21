@@ -58,7 +58,7 @@ class CognitoClient:
         ).digest()
         return base64.b64encode(dig).decode()
     
-    async def authenticate_user(self, email: str, password: str) -> Dict[str, Any]:
+    def authenticate_user(self, email: str, password: str) -> Dict[str, Any]:
         """
         Authenticate user with email and password.
         
@@ -102,7 +102,7 @@ class CognitoClient:
             auth_result = response['AuthenticationResult']
             
             # Get user attributes
-            user_info = await self.get_user_info(auth_result['AccessToken'])
+            user_info = self.get_user_info(auth_result['AccessToken'])
             
             return {
                 'access_token': auth_result['AccessToken'],
@@ -151,7 +151,7 @@ class CognitoClient:
                     error_code=error_code
                 )
     
-    async def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
+    def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
         """
         Refresh access token using refresh token.
         
@@ -212,7 +212,7 @@ class CognitoClient:
                     error_code=error_code
                 )
     
-    async def get_user_info(self, access_token: str) -> Dict[str, Any]:
+    def get_user_info(self, access_token: str) -> Dict[str, Any]:
         """
         Get user information from access token.
         
@@ -257,7 +257,7 @@ class CognitoClient:
                 error_code=error_code
             )
     
-    async def register_user(self, email: str, password: str, name: str) -> Dict[str, Any]:
+    def register_user(self, email: str, password: str, name: str) -> Dict[str, Any]:
         """
         Register a new user in Cognito.
         
@@ -327,7 +327,7 @@ class CognitoClient:
                     error_code=error_code
                 )
     
-    async def initiate_password_reset(self, email: str) -> Dict[str, Any]:
+    def initiate_password_reset(self, email: str) -> Dict[str, Any]:
         """
         Initiate password reset for user.
         
@@ -379,7 +379,7 @@ class CognitoClient:
                     error_code=error_code
                 )
     
-    async def confirm_password_reset(self, email: str, confirmation_code: str, new_password: str) -> bool:
+    def confirm_password_reset(self, email: str, confirmation_code: str, new_password: str) -> bool:
         """
         Confirm password reset with verification code.
         

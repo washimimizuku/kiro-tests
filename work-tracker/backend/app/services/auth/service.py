@@ -50,7 +50,7 @@ class AuthService:
         """
         try:
             # Authenticate with Cognito
-            auth_result = await cognito_client.authenticate_user(
+            auth_result = cognito_client.authenticate_user(
                 login_request.email,
                 login_request.password
             )
@@ -105,7 +105,7 @@ class AuthService:
             AuthServiceError: If token refresh fails
         """
         try:
-            auth_result = await cognito_client.refresh_token(refresh_request.refresh_token)
+            auth_result = cognito_client.refresh_token(refresh_request.refresh_token)
             
             return TokenResponse(
                 access_token=auth_result['access_token'],
@@ -142,7 +142,7 @@ class AuthService:
         """
         try:
             # Register with Cognito
-            cognito_result = await cognito_client.register_user(
+            cognito_result = cognito_client.register_user(
                 registration_request.email,
                 registration_request.password,
                 registration_request.name
@@ -324,7 +324,7 @@ class AuthService:
             AuthServiceError: If password reset initiation fails
         """
         try:
-            result = await cognito_client.initiate_password_reset(password_reset_request.email)
+            result = cognito_client.initiate_password_reset(password_reset_request.email)
             
             logger.info(
                 "Password reset initiated",
@@ -362,7 +362,7 @@ class AuthService:
             AuthServiceError: If password reset confirmation fails
         """
         try:
-            await cognito_client.confirm_password_reset(
+            cognito_client.confirm_password_reset(
                 password_reset_confirm.email,
                 password_reset_confirm.confirmation_code,
                 password_reset_confirm.new_password

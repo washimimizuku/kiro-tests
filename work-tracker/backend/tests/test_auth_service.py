@@ -57,16 +57,16 @@ class TestAuthService:
             }
         }
         
-        # Mock database operations
-        self.mock_db.execute.return_value.scalar_one_or_none.return_value = self.test_user
-        self.mock_db.commit = AsyncMock()
-        self.mock_db.refresh = AsyncMock()
-        
         # Act & Assert
         with patch('app.services.auth.service.cognito_client') as mock_cognito:
             mock_cognito.authenticate_user.return_value = mock_auth_result
             
-            result = await self.auth_service.authenticate_user(self.mock_db, login_request)
+            # Mock the _get_or_create_user method as an async method
+            async def mock_get_or_create_user(db, user_info):
+                return self.test_user
+            
+            with patch.object(self.auth_service, '_get_or_create_user', side_effect=mock_get_or_create_user):
+                result = await self.auth_service.authenticate_user(self.mock_db, login_request)
             
             # Verify result
             assert result.access_token == 'mock-access-token'
@@ -234,7 +234,9 @@ class TestAuthService:
         user_id = "test-cognito-id"
         
         # Mock database query
-        self.mock_db.execute.return_value.scalar_one_or_none.return_value = self.test_user
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = self.test_user
+        self.mock_db.execute.return_value = mock_result
         
         # Act
         result = await self.auth_service.get_user_profile(self.mock_db, user_id)
@@ -252,7 +254,9 @@ class TestAuthService:
         user_id = "non-existent-id"
         
         # Mock database query returning None
-        self.mock_db.execute.return_value.scalar_one_or_none.return_value = None
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = None
+        self.mock_db.execute.return_value = mock_result
         
         # Act & Assert
         with pytest.raises(AuthServiceError) as exc_info:
@@ -271,7 +275,9 @@ class TestAuthService:
         )
         
         # Mock database operations
-        self.mock_db.execute.return_value.scalar_one_or_none.return_value = self.test_user
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = self.test_user
+        self.mock_db.execute.return_value = mock_result
         self.mock_db.commit = AsyncMock()
         self.mock_db.refresh = AsyncMock()
         
@@ -404,7 +410,9 @@ class TestAuthService:
         }
         
         # Mock database query
-        self.mock_db.execute.return_value.scalar_one_or_none.return_value = self.test_user
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = self.test_user
+        self.mock_db.execute.return_value = mock_result
         self.mock_db.commit = AsyncMock()
         self.mock_db.refresh = AsyncMock()
         
@@ -427,7 +435,9 @@ class TestAuthService:
         }
         
         # Mock database query returning None (user doesn't exist)
-        self.mock_db.execute.return_value.scalar_one_or_none.return_value = None
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = None
+        self.mock_db.execute.return_value = mock_result
         self.mock_db.add = Mock()
         self.mock_db.commit = AsyncMock()
         self.mock_db.refresh = AsyncMock()
