@@ -14,24 +14,24 @@ This implementation plan transforms the Work Tracker design into a series of inc
   - Create React TypeScript project with essential dependencies
   - _Requirements: 5.1, 5.4_
 
-- [ ] 2. Database Schema and Core Models
-  - [ ] 2.1 Implement PostgreSQL database schema
+- [x] 2. Database Schema and Core Models
+  - [x] 2.1 Implement PostgreSQL database schema
     - Create users, activities, stories, and reports tables
     - Add indexes for performance optimization
     - Set up database migrations with Alembic
     - _Requirements: 1.2, 2.3, 3.1_
 
-  - [ ] 2.2 Write property test for database schema
+  - [x] 2.2 Write property test for database schema
     - **Property 1: Activity Lifecycle Consistency**
     - **Validates: Requirements 1.2, 1.4**
 
-  - [ ] 2.3 Create SQLAlchemy models and Pydantic schemas
+  - [x] 2.3 Create SQLAlchemy models and Pydantic schemas
     - Implement User, Activity, Story, and Report models
     - Add validation rules and relationships
     - Create request/response schemas for APIs
     - _Requirements: 1.2, 2.3, 6.1_
 
-  - [ ] 2.4 Write unit tests for data models
+  - [x] 2.4 Write unit tests for data models
     - Test model validation and relationships
     - Test schema serialization/deserialization
     - _Requirements: 1.2, 2.3_

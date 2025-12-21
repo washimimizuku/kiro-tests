@@ -8,6 +8,8 @@ from alembic import context
 # Import your models here
 from app.core.database import Base
 from app.core.config import get_database_url
+# Import all models to ensure they are registered with Base.metadata
+from app.models import User, Activity, Story, Report
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

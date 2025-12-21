@@ -100,5 +100,6 @@ def get_database_url() -> str:
     """Get database URL with proper async driver."""
     url = settings.DATABASE_URL
     if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        # For async SQLAlchemy with psycopg2, we use the psycopg driver
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url

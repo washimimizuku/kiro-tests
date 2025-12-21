@@ -16,7 +16,7 @@ from app.core.config import get_database_url, settings
 
 logger = structlog.get_logger()
 
-# Create async engine
+# Create async engine with psycopg2
 engine = create_async_engine(
     get_database_url(),
     echo=settings.DEBUG,
