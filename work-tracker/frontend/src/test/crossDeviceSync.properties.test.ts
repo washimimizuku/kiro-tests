@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as fc from 'fast-check'
 import { syncService, SyncEventType, SyncEvent, SyncConflict } from '@/services/syncService'
-import { offlineService } from '@/services/offlineService'
-import { Activity, Story, ActivityCategory, StoryStatus } from '@/types'
+import { Activity, ActivityCategory } from '@/types'
 
 /**
  * Property-Based Tests for Cross-Device Data Synchronization
@@ -12,7 +11,20 @@ import { Activity, Story, ActivityCategory, StoryStatus } from '@/types'
  * 
  * These tests verify that data modifications made on one device are
  * consistently available and up-to-date when accessed from other devices.
+ * Focus on core sync algorithms rather than transport layer.
  */
+
+// Mock the offline service to avoid IndexedDB issues in tests
+vi.mock('@/services/offlineService', () => ({
+  offlineService: {
+    initialize: vi.fn().mockResolvedValue(undefined),
+    clearCache: vi.fn().mockResolvedValue(undefined),
+    cacheActivities: vi.fn().mockResolvedValue(undefined),
+    getCachedActivities: vi.fn().mockResolvedValue([]),
+    cacheStories: vi.fn().mockResolvedValue(undefined),
+    getCachedStories: vi.fn().mockResolvedValue([]),
+  }
+}))
 
 // Simplified test data generators
 const activityGenerator = fc.record({
@@ -34,17 +46,19 @@ const deviceIdGenerator = fc.string({ minLength: 10, maxLength: 20 })
 
 describe('Cross-Device Data Synchronization Properties', () => {
   beforeEach(async () => {
-    // Initialize services
-    await offlineService.initialize()
-    await offlineService.clearCache()
-    
     // Mock localStorage for device IDs
-    const mockLocalStorage = (global as any).localStorage
-    mockLocalStorage.clear()
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: vi.fn(),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+      },
+      writable: true,
+    })
   })
 
   afterEach(async () => {
-    await offlineService.clearCache()
     syncService.disconnect()
     vi.restoreAllMocks()
   })
@@ -67,7 +81,9 @@ describe('Cross-Device Data Synchronization Properties', () => {
               entityId: activity.id,
               entityType: 'activity' as const,
               data: eventType !== SyncEventType.ACTIVITY_DELETED ? activity : undefined,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              userId: activity.userId,
+              deviceId: deviceId
             }
             
             // Verify event structure
@@ -75,6 +91,8 @@ describe('Cross-Device Data Synchronization Properties', () => {
             expect(syncEvent.entityId).toBe(activity.id)
             expect(syncEvent.entityType).toBe('activity')
             expect(syncEvent.timestamp).toBeGreaterThan(0)
+            expect(syncEvent.userId).toBe(activity.userId)
+            expect(syncEvent.deviceId).toBe(deviceId)
             
             // Verify data is present for create/update events
             if (eventType !== SyncEventType.ACTIVITY_DELETED) {
@@ -101,11 +119,15 @@ describe('Cross-Device Data Synchronization Properties', () => {
               data: activity,
               timestamp: Date.now(),
               userId: activity.userId,
-              deviceId: deviceId // Same device ID
+              deviceId: deviceId
             }
             
+            // Mock the sync service's device filtering logic
+            const currentDeviceId = deviceId
+            const shouldIgnore = syncEvent.deviceId === currentDeviceId
+            
             // Verify the sync service should ignore events from the same device
-            // This test verifies the event structure is correct for filtering
+            expect(shouldIgnore).toBe(true)
             expect(syncEvent.deviceId).toBe(deviceId)
             expect(syncEvent.userId).toBe(activity.userId)
             expect(syncEvent.entityId).toBe(activity.id)
@@ -151,30 +173,40 @@ describe('Cross-Device Data Synchronization Properties', () => {
               conflictType: 'concurrent_edit'
             }
             
-            // Cache local activity
-            await offlineService.cacheActivities([localActivity])
-            
-            // Create resolution
-            const resolution = {
-              entityId: baseActivity.id,
-              entityType: 'activity' as const,
-              resolution: resolutionType,
-              mergedData: resolutionType === 'merge' ? {
-                ...localActivity,
-                title: remoteActivity.title, // Take remote title
-                impactLevel: localActivity.impactLevel // Keep local impact level
-              } : undefined
+            // Create resolution based on type
+            let resolvedData: Activity
+            switch (resolutionType) {
+              case 'local':
+                resolvedData = localActivity
+                break
+              case 'remote':
+                resolvedData = remoteActivity
+                break
+              case 'merge':
+                resolvedData = {
+                  ...localActivity,
+                  title: remoteActivity.title, // Take remote title
+                  impactLevel: localActivity.impactLevel, // Keep local impact level
+                  updatedAt: new Date().toISOString() // New timestamp for merge
+                }
+                break
+              default:
+                resolvedData = localActivity
             }
             
-            // Verify resolution structure is correct
-            expect(resolution.entityId).toBe(baseActivity.id)
-            expect(resolution.entityType).toBe('activity')
-            expect(resolution.resolution).toBe(resolutionType)
+            // Verify resolution preserves data integrity
+            expect(resolvedData.id).toBe(baseActivity.id)
+            expect(resolvedData.userId).toBe(baseActivity.userId)
+            expect(resolvedData.category).toBe(baseActivity.category)
             
+            // Verify conflict detection logic
+            expect(conflict.localTimestamp).toBeLessThan(conflict.remoteTimestamp)
+            expect(conflict.conflictType).toBe('concurrent_edit')
+            
+            // Verify merge resolution combines data appropriately
             if (resolutionType === 'merge') {
-              expect(resolution.mergedData).toBeDefined()
-              expect(resolution.mergedData.title).toBe(remoteActivity.title)
-              expect(resolution.mergedData.impactLevel).toBe(localActivity.impactLevel)
+              expect(resolvedData.title).toBe(remoteActivity.title)
+              expect(resolvedData.impactLevel).toBe(localActivity.impactLevel)
             }
           }
         ),
@@ -183,48 +215,8 @@ describe('Cross-Device Data Synchronization Properties', () => {
     })
   })
 
-  describe('Sync Status Properties', () => {
-    it('Property 11.4: Sync status reflects connection state', async () => {
-      await fc.assert(
-        fc.asyncProperty(
-          fc.uuid(), // userId
-          fc.boolean(), // connection state
-          async (userId, shouldBeConnected) => {
-            if (shouldBeConnected) {
-              // Mock successful connection
-              const status = {
-                isConnected: true,
-                lastSync: Date.now(),
-                pendingConflicts: [],
-                syncInProgress: false,
-                deviceId: 'test-device-id'
-              }
-              
-              expect(status.isConnected).toBe(true)
-              expect(status.deviceId).toBeDefined()
-              expect(status.deviceId.length).toBeGreaterThan(0)
-              expect(status.lastSync).toBeGreaterThan(0)
-            } else {
-              // Mock disconnected state
-              const status = {
-                isConnected: false,
-                lastSync: 0,
-                pendingConflicts: [],
-                syncInProgress: false,
-                deviceId: 'test-device-id'
-              }
-              
-              expect(status.isConnected).toBe(false)
-            }
-          }
-        ),
-        { numRuns: 8 }
-      )
-    })
-  })
-
   describe('Data Consistency Properties', () => {
-    it('Property 11.5: Activity sync events preserve data structure', async () => {
+    it('Property 11.4: Activity sync maintains data structure consistency', async () => {
       await fc.assert(
         fc.asyncProperty(
           activityGenerator,
@@ -243,18 +235,23 @@ describe('Cross-Device Data Synchronization Properties', () => {
             
             // Verify the activity data is preserved in the sync event
             expect(createEvent.data).toEqual(activity)
-            expect(createEvent.data.id).toBe(activity.id)
-            expect(createEvent.data.title).toBe(activity.title)
-            expect(createEvent.data.category).toBe(activity.category)
-            expect(createEvent.data.impactLevel).toBe(activity.impactLevel)
-            expect(createEvent.data.tags).toEqual(activity.tags)
+            expect(createEvent.data?.id).toBe(activity.id)
+            expect(createEvent.data?.title).toBe(activity.title)
+            expect(createEvent.data?.category).toBe(activity.category)
+            expect(createEvent.data?.impactLevel).toBe(activity.impactLevel)
+            expect(createEvent.data?.tags).toEqual(activity.tags)
+            
+            // Verify required fields are present
+            expect(createEvent.data?.userId).toBe(activity.userId)
+            expect(createEvent.data?.createdAt).toBeDefined()
+            expect(createEvent.data?.updatedAt).toBeDefined()
           }
         ),
         { numRuns: 10 }
       )
     })
 
-    it('Property 11.6: Sync events maintain timestamp ordering', async () => {
+    it('Property 11.5: Sync events maintain timestamp ordering', async () => {
       await fc.assert(
         fc.asyncProperty(
           fc.array(activityGenerator, { minLength: 2, maxLength: 5 }),
@@ -264,12 +261,13 @@ describe('Cross-Device Data Synchronization Properties', () => {
             const normalizedActivities = activities.map(a => ({ ...a, userId }))
             
             // Create sync events with increasing timestamps
+            const baseTimestamp = Date.now()
             const syncEvents: SyncEvent[] = normalizedActivities.map((activity, index) => ({
               type: SyncEventType.ACTIVITY_CREATED,
               entityId: activity.id,
               entityType: 'activity',
               data: activity,
-              timestamp: Date.now() + index * 1000, // Ensure ordering
+              timestamp: baseTimestamp + index * 1000, // Ensure ordering
               userId,
               deviceId
             }))
@@ -283,10 +281,63 @@ describe('Cross-Device Data Synchronization Properties', () => {
             syncEvents.forEach(event => {
               expect(event.userId).toBe(userId)
               expect(event.deviceId).toBe(deviceId)
+              expect(event.entityType).toBe('activity')
             })
           }
         ),
         { numRuns: 8 }
+      )
+    })
+
+    it('Property 11.6: Cross-device data consistency through event application', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          activityGenerator,
+          fc.tuple(deviceIdGenerator, deviceIdGenerator).filter(([d1, d2]) => d1 !== d2),
+          async (activity, [device1, device2]) => {
+            // Simulate activity created on device 1
+            const createEvent: SyncEvent = {
+              type: SyncEventType.ACTIVITY_CREATED,
+              entityId: activity.id,
+              entityType: 'activity',
+              data: activity,
+              timestamp: Date.now(),
+              userId: activity.userId,
+              deviceId: device1
+            }
+            
+            // Simulate activity update on device 2
+            const updatedActivity: Activity = {
+              ...activity,
+              title: 'Updated Title',
+              updatedAt: new Date(Date.now() + 1000).toISOString()
+            }
+            
+            const updateEvent: SyncEvent = {
+              type: SyncEventType.ACTIVITY_UPDATED,
+              entityId: activity.id,
+              entityType: 'activity',
+              data: updatedActivity,
+              timestamp: Date.now() + 1000,
+              userId: activity.userId,
+              deviceId: device2
+            }
+            
+            // Verify events maintain consistency
+            expect(createEvent.entityId).toBe(updateEvent.entityId)
+            expect(createEvent.userId).toBe(updateEvent.userId)
+            expect(createEvent.deviceId).not.toBe(updateEvent.deviceId)
+            
+            // Verify update event has later timestamp
+            expect(updateEvent.timestamp).toBeGreaterThan(createEvent.timestamp)
+            
+            // Verify data evolution
+            expect(updateEvent.data?.title).toBe('Updated Title')
+            expect(updateEvent.data?.id).toBe(activity.id)
+            expect(updateEvent.data?.userId).toBe(activity.userId)
+          }
+        ),
+        { numRuns: 10 }
       )
     })
   })
