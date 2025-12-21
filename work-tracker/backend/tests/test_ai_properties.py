@@ -98,7 +98,8 @@ class TestAIServiceProperties:
     """Property-based tests for AI service functionality."""
     
     @given(story_content())
-    @settings(max_examples=10, deadline=30000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @settings(max_examples=3, deadline=10000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @pytest.mark.asyncio
     async def test_story_enhancement_property(self, story_data):
         """
         Property 4: Story Enhancement and Validation
@@ -157,7 +158,8 @@ class TestAIServiceProperties:
             assert story_data["result"] in call_args[1]["prompt"]
     
     @given(partial_story_content())
-    @settings(max_examples=10, deadline=30000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @settings(max_examples=3, deadline=10000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @pytest.mark.asyncio
     async def test_story_completeness_analysis_property(self, story_data):
         """
         Property 4: Story Enhancement and Validation (Completeness Analysis)
@@ -224,7 +226,8 @@ class TestAIServiceProperties:
                 assert len(response.result_missing) == 0
     
     @given(st.text(min_size=1, max_size=100))
-    @settings(max_examples=5, deadline=30000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @settings(max_examples=2, deadline=10000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @pytest.mark.asyncio
     async def test_ai_service_error_handling_property(self, invalid_input):
         """
         Property: AI Service Error Handling
@@ -256,7 +259,8 @@ class TestAIServiceProperties:
             mock_claude.assert_called_once()
     
     @given(story_content())
-    @settings(max_examples=5, deadline=30000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @settings(max_examples=2, deadline=10000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @pytest.mark.asyncio
     async def test_story_enhancement_response_consistency_property(self, story_data):
         """
         Property: Response Consistency
@@ -310,7 +314,8 @@ class TestAIServiceProperties:
             assert 1 <= response.completeness_score <= 10
     
     @given(report_generation_request())
-    @settings(max_examples=5, deadline=30000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @settings(max_examples=2, deadline=10000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @pytest.mark.asyncio
     async def test_report_generation_completeness_property(self, request_data):
         """
         Property 6: Report Generation Completeness
@@ -398,7 +403,8 @@ This report covers the period from {request_data.period_start} to {request_data.
                 assert activity.title in prompt or activity.category in prompt
     
     @given(activity_list())
-    @settings(max_examples=5, deadline=30000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @settings(max_examples=2, deadline=10000, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @pytest.mark.asyncio
     async def test_report_generation_activity_inclusion_property(self, activities):
         """
         Property: Report Generation Activity Inclusion

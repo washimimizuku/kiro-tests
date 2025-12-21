@@ -7,7 +7,6 @@ import asyncio
 import os
 import pytest
 import httpx
-import asyncpg
 import redis.asyncio as redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine

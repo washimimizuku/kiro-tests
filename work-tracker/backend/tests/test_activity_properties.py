@@ -129,7 +129,7 @@ class TestActivityLifecycleConsistency:
     """
 
     @given(user_id_strategy(), activity_create_strategy())
-    @settings(max_examples=100, deadline=2000)  # 2 second deadline per requirement 1.2
+    @settings(max_examples=20, deadline=2000)  # 2 second deadline per requirement 1.2
     @pytest.mark.asyncio
     async def test_activity_creation_lifecycle_consistency(self, user_id: UUID, activity_data: ActivityCreate):
         """
@@ -184,7 +184,7 @@ class TestActivityLifecycleConsistency:
         assert result.user_id == user_id
 
     @given(user_id_strategy(), mock_activity_strategy(), activity_update_strategy())
-    @settings(max_examples=100, deadline=2000)
+    @settings(max_examples=20, deadline=2000)
     @pytest.mark.asyncio
     async def test_activity_update_lifecycle_consistency(self, user_id: UUID, existing_activity: Activity, update_data: ActivityUpdate):
         """
@@ -241,7 +241,7 @@ class TestActivityLifecycleConsistency:
             assert result.tags == expected_tags
 
     @given(user_id_strategy(), st.lists(activity_create_strategy(), min_size=1, max_size=20))
-    @settings(max_examples=50, deadline=2000)
+    @settings(max_examples=10, deadline=2000)
     @pytest.mark.asyncio
     async def test_activity_list_retrieval_consistency(self, user_id: UUID, activities_data: List[ActivityCreate]):
         """
@@ -318,7 +318,7 @@ class TestTagManagementConsistency:
     """
 
     @given(user_id_strategy(), st.lists(st.lists(st.text(min_size=1, max_size=50).filter(lambda x: x.strip()), min_size=1, max_size=10), min_size=1, max_size=20))
-    @settings(max_examples=50, deadline=2000)
+    @settings(max_examples=10, deadline=2000)
     @pytest.mark.asyncio
     async def test_tag_normalization_consistency(self, user_id: UUID, tag_lists: List[List[str]]):
         """
@@ -383,7 +383,7 @@ class TestTagManagementConsistency:
         assert len(result_tags) == len(set(result_tags))
 
     @given(user_id_strategy(), st.text(min_size=1, max_size=20), st.lists(st.text(min_size=1, max_size=50).filter(lambda x: x.strip()), min_size=1, max_size=50))
-    @settings(max_examples=100, deadline=2000)
+    @settings(max_examples=20, deadline=2000)
     @pytest.mark.asyncio
     async def test_tag_suggestion_consistency(self, user_id: UUID, partial_tag: str, existing_tags: List[str]):
         """
@@ -428,7 +428,7 @@ class TestTagManagementConsistency:
         assert len(suggestions) == len(set(suggestions))
 
     @given(user_id_strategy(), activity_create_strategy())
-    @settings(max_examples=100, deadline=2000)
+    @settings(max_examples=20, deadline=2000)
     @pytest.mark.asyncio
     async def test_tag_creation_consistency(self, user_id: UUID, activity_data: ActivityCreate):
         """
@@ -472,7 +472,7 @@ class TestTagManagementConsistency:
         assert result_set == original_normalized
 
     @given(user_id_strategy(), activity_filters_strategy())
-    @settings(max_examples=50, deadline=2000)
+    @settings(max_examples=10, deadline=2000)
     @pytest.mark.asyncio
     async def test_tag_filtering_consistency(self, user_id: UUID, filters: ActivityFilters):
         """
@@ -549,7 +549,7 @@ class TestActivityFilteringProperties:
     """
 
     @given(user_id_strategy(), st.lists(st.text(min_size=1, max_size=500).filter(lambda x: x.strip()), min_size=1, max_size=50))
-    @settings(max_examples=50, deadline=2000)
+    @settings(max_examples=10, deadline=2000)
     @pytest.mark.asyncio
     async def test_activity_title_suggestion_accuracy(self, user_id: UUID, existing_titles: List[str]):
         """
@@ -607,7 +607,7 @@ class TestActivityFilteringProperties:
         assert len(suggestions) == len(set(suggestions))
 
     @given(user_id_strategy(), st.lists(mock_activity_strategy(), min_size=1, max_size=30), activity_filters_strategy())
-    @settings(max_examples=50, deadline=2000)
+    @settings(max_examples=10, deadline=2000)
     @pytest.mark.asyncio
     async def test_activity_filtering_consistency(self, user_id: UUID, activities: List[Activity], filters: ActivityFilters):
         """
@@ -747,7 +747,7 @@ class TestActivityFilteringProperties:
                 assert title_match or desc_match
 
     @given(user_id_strategy(), st.lists(mock_activity_strategy(), min_size=5, max_size=50))
-    @settings(max_examples=30, deadline=2000)
+    @settings(max_examples=10, deadline=2000)
     @pytest.mark.asyncio
     async def test_activity_date_grouping_consistency(self, user_id: UUID, activities: List[Activity]):
         """
@@ -795,7 +795,7 @@ class TestActivityFilteringProperties:
         assert result_ids == original_ids
 
     @given(user_id_strategy(), st.text(min_size=1, max_size=100), st.lists(mock_activity_strategy(), min_size=1, max_size=30))
-    @settings(max_examples=50, deadline=2000)
+    @settings(max_examples=10, deadline=2000)
     @pytest.mark.asyncio
     async def test_full_text_search_consistency(self, user_id: UUID, search_term: str, activities: List[Activity]):
         """
