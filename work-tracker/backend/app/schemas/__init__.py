@@ -35,6 +35,17 @@ from .report import (
     ReportGenerationRequest,
     ReportExportRequest,
 )
+from .export import (
+    ExportFormat,
+    ExportRequest,
+    ExportResponse,
+    ExportData,
+    ExportStatus,
+    ImportRequest,
+    ImportResponse,
+    BackupRequest,
+    BackupResponse,
+)
 
 __all__ = [
     # User schemas
@@ -68,4 +79,14 @@ __all__ = [
     "ReportFilters",
     "ReportGenerationRequest",
     "ReportExportRequest",
+    # Export schemas
+    "ExportFormat",
+    "ExportRequest",
+    "ExportResponse",
+    "ExportData",
+    "ExportStatus",
+    "ImportRequest",
+    "ImportResponse",
+    "BackupRequest",
+    "BackupResponse",
 ]

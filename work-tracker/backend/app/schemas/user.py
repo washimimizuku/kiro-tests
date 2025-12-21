@@ -46,6 +46,8 @@ class UserProfile(BaseModel):
     email: EmailStr
     name: str
     preferences: Dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True
