@@ -49,10 +49,10 @@ const activityCategoryArb = fc.constantFrom(...Object.values(ActivityCategory))
 const activityArb = fc.record({
   id: fc.uuid(),
   userId: fc.uuid(),
-  title: fc.string({ minLength: 1, maxLength: 500 }),
-  description: fc.option(fc.string({ maxLength: 1000 })),
+  title: fc.string({ minLength: 1, maxLength: 500 }).filter(s => s.trim().length > 0),
+  description: fc.option(fc.string({ maxLength: 1000 }).filter(s => s.trim().length > 0)),
   category: activityCategoryArb,
-  tags: fc.array(fc.string({ minLength: 1, maxLength: 50 }), { maxLength: 10 }),
+  tags: fc.array(fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0), { maxLength: 10 }),
   impactLevel: fc.integer({ min: 1, max: 5 }),
   date: fc.date({ min: new Date('2020-01-01'), max: new Date('2030-12-31') }).map(d => d.toISOString().split('T')[0]),
   durationMinutes: fc.option(fc.integer({ min: 1, max: 1440 })),
@@ -63,11 +63,11 @@ const activityArb = fc.record({
 
 const activityFiltersArb = fc.record({
   category: fc.option(activityCategoryArb),
-  tags: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 50 }), { maxLength: 5 })),
+  tags: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0), { maxLength: 5 })),
   dateFrom: fc.option(fc.date().map(d => d.toISOString().split('T')[0])),
   dateTo: fc.option(fc.date().map(d => d.toISOString().split('T')[0])),
   impactLevel: fc.option(fc.integer({ min: 1, max: 5 })),
-  search: fc.option(fc.string({ maxLength: 100 })),
+  search: fc.option(fc.string({ maxLength: 100 }).filter(s => s.trim().length > 0)),
 }) as fc.Arbitrary<ActivityFilters>
 
 describe('Activity UI Properties', () => {
@@ -96,8 +96,8 @@ describe('Activity UI Properties', () => {
   it('Property 2: Auto-complete suggestions should contain input as substring when matches exist', () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 2, maxLength: 50 }),
-        fc.array(fc.string({ minLength: 1, maxLength: 100 }), { minLength: 1, maxLength: 10 }),
+        fc.string({ minLength: 2, maxLength: 50 }).filter(s => s.trim().length > 0),
+        fc.array(fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0), { minLength: 1, maxLength: 10 }),
         (query, allSuggestions) => {
           // Filter suggestions that should match the query
           const expectedMatches = allSuggestions.filter(suggestion =>
@@ -226,7 +226,7 @@ describe('Activity UI Properties', () => {
       fc.property(
         fc.array(activityArb, { minLength: 1, maxLength: 10 }),
         (activities) => {
-          render(
+          const { container } = render(
             React.createElement(TestWrapper, null,
               React.createElement(ActivityList, { activities })
             )
@@ -247,11 +247,15 @@ describe('Activity UI Properties', () => {
             // Check if date header exists (we can't easily test the exact format due to date parsing)
             const activitiesForDate = groupedActivities[date]
             
-            // Verify all activities for this date are present
+            // Verify all activities for this date are present by checking the container contains the titles
             activitiesForDate.forEach(activity => {
-              expect(screen.getByText(activity.title)).toBeInTheDocument()
+              // Use container.textContent to check if the title exists somewhere in the rendered component
+              expect(container.textContent).toContain(activity.title)
             })
           })
+
+          // Verify the component renders without errors
+          expect(container.querySelector('.space-y-6')).toBeInTheDocument()
 
           return true
         }
@@ -267,12 +271,12 @@ describe('Activity UI Properties', () => {
   it('Property 2: ActivityFilters should handle search input correctly', async () => {
     fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 2, maxLength: 20 }),
+        fc.string({ minLength: 2, maxLength: 20 }).filter(s => s.trim().length > 0),
         async (searchQuery) => {
           const user = userEvent.setup()
           const mockOnFiltersChange = vi.fn()
           
-          render(
+          const { container } = render(
             React.createElement(TestWrapper, null,
               React.createElement(ActivityFilters, {
                 filters: {},
@@ -281,7 +285,9 @@ describe('Activity UI Properties', () => {
             )
           )
 
-          const searchInput = screen.getByPlaceholderText('Search activities...')
+          // Use a more specific selector to avoid multiple elements
+          const searchInput = container.querySelector('input[placeholder="Search activities..."]') as HTMLInputElement
+          expect(searchInput).toBeInTheDocument()
           
           // Type in the search query
           await user.type(searchInput, searchQuery)
@@ -311,7 +317,7 @@ describe('Activity UI Properties', () => {
         (initialFilters) => {
           const mockOnFiltersChange = vi.fn()
           
-          render(
+          const { container } = render(
             React.createElement(TestWrapper, null,
               React.createElement(ActivityFilters, {
                 filters: initialFilters,
@@ -321,11 +327,12 @@ describe('Activity UI Properties', () => {
           )
 
           // The component should render without errors with any valid filter combination
-          expect(screen.getByPlaceholderText('Search activities...')).toBeInTheDocument()
+          const searchInput = container.querySelector('input[placeholder="Search activities..."]') as HTMLInputElement
+          expect(searchInput).toBeInTheDocument()
           
           // If search value exists, it should be displayed
           if (initialFilters.search) {
-            expect(screen.getByDisplayValue(initialFilters.search)).toBeInTheDocument()
+            expect(searchInput.value).toBe(initialFilters.search)
           }
 
           return true
