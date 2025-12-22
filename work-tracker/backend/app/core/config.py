@@ -76,7 +76,7 @@ class Settings(BaseSettings):
     @validator("ENVIRONMENT")
     def validate_environment(cls, v):
         """Validate environment setting."""
-        allowed = ["development", "staging", "production"]
+        allowed = ["development", "staging", "production", "test"]
         if v not in allowed:
             raise ValueError(f"Environment must be one of: {allowed}")
         return v
@@ -116,6 +116,6 @@ def get_database_url() -> str:
     """Get database URL with proper async driver."""
     url = settings.DATABASE_URL
     if url.startswith("postgresql://"):
-        # For async SQLAlchemy with psycopg2, we use the psycopg driver
+        # For async SQLAlchemy with psycopg (version 3) driver
         return url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url

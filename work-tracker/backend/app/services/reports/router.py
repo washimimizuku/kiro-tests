@@ -16,7 +16,7 @@ from app.schemas.report import (
 )
 from app.models.report import ReportType, ReportStatus
 from app.services.auth.jwt_middleware import get_current_user
-from app.schemas.auth import User
+from app.schemas.user import UserResponse as User
 from app.core.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 

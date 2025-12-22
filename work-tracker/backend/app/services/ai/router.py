@@ -19,7 +19,7 @@ from .schemas import (
     AIHealthCheckResponse
 )
 from app.services.auth.jwt_middleware import get_current_user
-from app.schemas.auth import User
+from app.schemas.user import UserResponse as User
 
 logger = logging.getLogger(__name__)
 

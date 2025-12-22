@@ -321,8 +321,8 @@ class TestDeploymentValidation:
             assert response.status_code == 200
             
             # 2. API endpoints are accessible
-            response = await client.get(f"{api_base_url}/api/v1/activities")
-            assert response.status_code in [401, 422]  # Should require auth, not crash
+            response = await client.get(f"{api_base_url}/api/v1/activities/")
+            assert response.status_code in [401, 403, 422]  # Should require auth, not crash
             
             # 3. Error handling works
             response = await client.get(f"{api_base_url}/nonexistent")

@@ -39,10 +39,13 @@ class TestLoadPerformance:
             response = await client.get(url)
             end_time = time.time()
             
+            # Consider 200, 401, and 403 as successful responses (401/403 are expected for protected endpoints)
+            success = response.status_code in [200, 401, 403]
+            
             return {
                 "status_code": response.status_code,
                 "response_time": (end_time - start_time) * 1000,  # milliseconds
-                "success": response.status_code == 200,
+                "success": success,
                 "error": None
             }
         except Exception as e:
@@ -240,8 +243,8 @@ class TestLoadPerformance:
         """Test performance of different API endpoints."""
         endpoints = [
             "/health",
-            "/api/v1/activities",  # Will return 401, but tests endpoint performance
-            "/api/v1/stories",     # Will return 401, but tests endpoint performance
+            "/api/v1/activities/",  # Will return 403, but tests endpoint performance
+            "/api/v1/stories/stories/",     # Will return 403, but tests endpoint performance
         ]
         
         results_by_endpoint = {}
@@ -276,7 +279,7 @@ class TestLoadPerformance:
                 assert metrics["avg_response_time"] <= 500, \
                     f"Health endpoint too slow: {metrics['avg_response_time']:.2f}ms"
             else:
-                # API endpoints may return 401, but should not crash
+                # API endpoints may return 403, but should not crash
                 assert metrics["error_rate"] <= 0.05, \
                     f"Endpoint {endpoint} error rate too high: {metrics['error_rate']:.2%}"
     

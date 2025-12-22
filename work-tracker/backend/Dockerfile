@@ -6,11 +6,20 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     postgresql-client \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Poetry
+RUN pip install poetry==1.7.1
+
+# Configure Poetry: Don't create virtual environment (we're in a container)
+RUN poetry config virtualenvs.create false
+
+# Copy Poetry files first for better caching
+COPY pyproject.toml poetry.lock ./
+
+# Install dependencies
+RUN poetry install --no-dev --no-interaction --no-ansi
 
 # Copy application code
 COPY . .

@@ -16,14 +16,22 @@ from app.core.config import get_database_url, settings
 
 logger = structlog.get_logger()
 
-# Create async engine with psycopg2
-engine = create_async_engine(
-    get_database_url(),
-    echo=settings.DEBUG,
-    pool_size=settings.DATABASE_POOL_SIZE,
-    max_overflow=settings.DATABASE_MAX_OVERFLOW,
-    poolclass=NullPool if settings.ENVIRONMENT == "test" else None,
-)
+# Create async engine with asyncpg
+if settings.ENVIRONMENT == "test":
+    # For testing, use NullPool without pool parameters
+    engine = create_async_engine(
+        get_database_url(),
+        echo=settings.DEBUG,
+        poolclass=NullPool,
+    )
+else:
+    # For non-test environments, use connection pooling
+    engine = create_async_engine(
+        get_database_url(),
+        echo=settings.DEBUG,
+        pool_size=settings.DATABASE_POOL_SIZE,
+        max_overflow=settings.DATABASE_MAX_OVERFLOW,
+    )
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(
