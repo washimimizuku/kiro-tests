@@ -15,25 +15,30 @@ FastAPI backend services for the Work Tracker application.
 
 ## Development
 
-1. **Install dependencies**
+1. **Install Poetry** (if not already installed)
    ```bash
-   pip install -r requirements.txt
+   curl -sSL https://install.python-poetry.org | python3 -
    ```
 
-2. **Set up environment variables**
+2. **Install dependencies**
+   ```bash
+   poetry install
+   ```
+
+3. **Set up environment variables**
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
-3. **Start development server**
+4. **Start development server**
    ```bash
-   uvicorn app.main:app --reload
+   poetry run uvicorn app.main:app --reload
    ```
 
-4. **Run tests**
+5. **Run tests**
    ```bash
-   pytest
+   poetry run pytest
    ```
 
 ## Project Structure
@@ -84,29 +89,29 @@ When running in development mode, API documentation is available at:
 
 ```bash
 # Create a new migration
-alembic revision --autogenerate -m "Description"
+poetry run alembic revision --autogenerate -m "Description"
 
 # Apply migrations
-alembic upgrade head
+poetry run alembic upgrade head
 
 # Downgrade migrations
-alembic downgrade -1
+poetry run alembic downgrade -1
 ```
 
 ## Testing
 
 ```bash
 # Run all tests
-pytest
+poetry run pytest
 
 # Run with coverage
-pytest --cov=app
+poetry run pytest --cov=app
 
 # Run property-based tests only
-pytest -m property
+poetry run pytest -m property
 
 # Run specific test file
-pytest tests/test_activities.py
+poetry run pytest tests/test_activities.py
 ```
 
 ## Deployment
